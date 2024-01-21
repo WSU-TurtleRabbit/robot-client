@@ -6,7 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "Client"
 requires-python = ">=3.7.12"
 dependencies = [
-    "numpy"
+    "numpy",
+    "moteus",
+    "moteus-pi3hat"
 ]
 
 dynamic = [
