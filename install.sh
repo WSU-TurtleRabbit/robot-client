@@ -1,5 +1,10 @@
 #! /usr/bin/env bash
 
+if [ $EUID != 0 ]; then
+    sudo "$0" "$@"
+    exit $?
+fi
+
 sudo rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED
 curl https://pyenv.run/ | bash
 
