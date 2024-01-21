@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Client"
+requires-python = ">=3.7.12"
+dependencies = [
+    "numpy"
+]
+
+dynamic = [
+    "version"
+]
+
+[tools.setuptools.packages.find]
+where = ["src"]
+
+[tools.setuptools.dynamic]
+version = {attr = "Client.__version__"}

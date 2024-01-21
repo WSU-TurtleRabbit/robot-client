@@ -40,3 +40,5 @@ do
     python3 -m moteus.moteus_tool --target $id --console conf set servopos.position_max nan  
     python3 -m moteus.moteus_tool --target $id --console conf write 
 done
+
+pip3 install --editable .
