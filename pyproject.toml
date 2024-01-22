@@ -7,14 +7,19 @@ name = "Client"
 requires-python = ">=3.7.12"
 dependencies = [
     "numpy",
-    "moteus",
-    "moteus-pi3hat"
+    "argparse",
 ]
 
 dynamic = [
     "version"
 ]
 
+
+[project.optional-dependencies]
+prod = [
+    "moteus",
+    "moteus-pi3hat",
+]
 [tools.setuptools.packages.find]
 where = ["src"]
 
