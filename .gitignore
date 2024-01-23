@@ -4,6 +4,7 @@ bin/
 lib/
 pyvenv.cfg
 *.egg-info
+.Python
 
 .DS_Store
 ._*
