@@ -1,30 +1,29 @@
-#! /usr/bin/env bash
-
-[ "$EUID" -eq 0 ] || sudo "$0" "$@"
-
-sudo rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED*
-curl https://pyenv.run/ | bash
+#! /usr/bin/bash
 
 sudo apt-get update
-sudo apt-get upgrade --yes 
+# sudo apt-get upgrade --yes 
+
+if [[ ! -d $HOME/.pyenv ]] && curl https://pyenv.run/ | bash
 
 sudo apt-get install --yes libssl-dev zlib1g-dev libbz2-dev libreadline-dev libsqlite3-dev llvm libncurses5-dev libncursesw5-dev xz-utils tk-dev libgdbm-dev lzma lzma-dev tcl-dev libxml2-dev libxmlsec1-dev libffi-dev liblzma-dev wget curl make build-essential openssl
 
 touch ~/.bashrc
 
-echo 'export PATH="$HOME/.pyenv/bin:$PATH"' >> ~/.bashrc
+echo 'export PYENV_ROOT="$HOME/.pyenv"' >> ~/.bashrc
+echo '[[ -d $PYENV_ROOT/bin ]] && export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
 echo 'eval "$(pyenv init --path)"' >> ~/.bashrc 
 echo 'eval "$(pyenv virtualenv-init -)"' >> ~/.bashrc 
-
 # exec $SHELL
 source ~/.bashrc
 
 pyenv update
-
 pyenv install 3.7.12
 pyenv global 3.7.12
 
-pip3 install --upgrade pip3
+sudo rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED*
+sudo rm -rf /usr/lib/python3.7.12/EXTERNALLY-MANAGED*
+
+pip install --upgrade pip
 sudo pip3 install moteus
 pip3 install moteus-pi3hat
 
