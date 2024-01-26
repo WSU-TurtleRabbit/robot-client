@@ -1,3 +1,4 @@
+from Client.Controllers.BaseController import BaseController
 import math
 
 import numpy as np
@@ -6,7 +7,7 @@ import time
 import moteus
 import moteus_pi3hat
 
-class Motor():
+class Motor(BaseController):
     def __init__(self):
         """_summary_
             initiate the motor controller with Moteus and Moteus pi3hat
@@ -34,9 +35,9 @@ class Motor():
                 id: moteus.Controller(id=id, transport=self.transport)
                 for id in self.servo_bus_map.keys()
             }
-        self.set_b()
-        self.set_d()
-        self.set_r()
+        self.set_b() # sets wheel degrees
+        self.set_d() # sets distance to centre from each wheel
+        self.set_r() # sets radius of the wheel
         print("Motor Controller initialised") #END
 
 

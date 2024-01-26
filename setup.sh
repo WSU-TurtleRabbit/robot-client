@@ -1,9 +1,9 @@
 #! /usr/bin/bash
 
-if [[ "$$" -ne (sh -c 'echo $PPID' && :) ]]; then
-    echo "use '. ./$0'"
-    exit 1
-fi 
+# if [[ "$$" -ne (sh -c 'echo $PPID' && :) ]]; then
+#     echo "use '. ./$0'"
+#     exit 1
+# fi 
 
 sudo apt-get update
 # sudo apt-get upgrade --yes 
