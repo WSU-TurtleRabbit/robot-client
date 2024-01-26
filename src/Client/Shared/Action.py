@@ -1,9 +1,9 @@
 
 class Action:
-    def __init__(self, vx: float, vy: float, theta: float, kick: bool, dribble: float):
+    def __init__(self, vx: float, vy: float, omega: float, kick: bool, dribble: float):
         self.vx = vx
         self.vy = vy
-        self.theta = theta
+        self.omega = omega
         self.kick = kick
         self.dribble = dribble
 
