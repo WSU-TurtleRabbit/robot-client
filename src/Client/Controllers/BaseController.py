@@ -3,7 +3,7 @@ class BaseController:
         pass
 
     def run(self, action):
-        raise NotImplementedError
+        pass
 
     @staticmethod
     def add_cls_specific_arguments(parent):
