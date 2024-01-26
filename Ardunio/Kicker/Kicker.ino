@@ -1,5 +1,5 @@
 const int outputPin = 8;
-void pulsePin(int outputPin, int pulseTime);
+void pulsePin(int outputPin, int pulseTime); // function statement for compiling
 
 void setup() {
   Serial.begin(19200); // set baudrate to 19200
@@ -20,7 +20,7 @@ void pulsePin(int outputPin, int pulseTime){
   /*
   * pulsePin(int outputPin, int pulseTime)
   * sends a pulse (active high) into `outputPin` when called.
-  * @args
+  * args:
   * outputPin (int): pin to send the pulse to
   * pulseTime (int): length of pulse in microseconds
   */
