@@ -1,8 +1,8 @@
 #! /usr/bin/bash
 
-if [[ $$ -ne $BASHPID ]]; then
+if [[ "$$" -ne (sh -c 'echo $PPID' && :) ]]; then
     echo "use '. ./$0'"
-    exit(1)
+    exit 1
 fi 
 
 sudo apt-get update
