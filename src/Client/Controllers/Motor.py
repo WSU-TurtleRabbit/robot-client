@@ -13,12 +13,14 @@ class Motor(BaseController):
             initiate the motor controller with Moteus and Moteus pi3hat
         Params : 
             timeout(float) : standard values for await
+            u(int) : unit scaler - used for scaling, input: mm(1) to cm(10) to m (1000)
             servo_bus_map (dict) : maps pi3hat-fdcan id to moteus boards
             transport(pi3hat-router): applys the map onto the pi3hat and initialise
             servos(map) : establish connection of moteus boards and pi3hat
         """
 
         self.timeout = 0.02
+        self.u = 1
     
         self.servo_bus_map = { 
                     1: [1],
@@ -93,7 +95,7 @@ class Motor(BaseController):
             H.T: transpose H matrix into (3,4)
 
         Returns:
-            u (array): returns all calculated wheel velocity
+            w (array): returns all calculated wheel velocity
         """
         vb = np.array([omega, vx, vy])
         vb = np.expand_dims(vb, axis=1)
@@ -102,8 +104,8 @@ class Motor(BaseController):
         [np.sin(self.b1), -np.sin(self.b2), -np.sin(self.b3), np.sin(self.b4)],
         ])
 
-        u = (H.T@vb)/self.r
-        return u
+        w = (H.T@vb)/self.r
+        return w
     
     def set_b(self, b1=120, b2=45, b3=-45, b4=-120):
         """_summary_
@@ -122,7 +124,7 @@ class Motor(BaseController):
 
     def set_d(self, d1=(61,35), d2=(50,50), d3=(50,50), d4=(61,32)):
         """_summary_
-            Sets the distance of each wheels from the centre
+            Sets the distance of each wheels from the centre using Pythagorus Theorum.
 
         Args: (mm)
             d1 (tuple, coordinates): . Defaults to (61,35).
@@ -131,10 +133,10 @@ class Motor(BaseController):
             d4 (tuple, coordinates): . Defaults to (61,32).
             
         """
-        self.d1 = np.sqrt((d1[0])^2+(d1[1])^2)/10
-        self.d2 = np.sqrt(d2[0]^2+d2[1]^2)/10
-        self.d3 = np.sqrt(d3[0]^2+d3[1]^2)/10
-        self.d4 = np.sqrt(d4[0]^2+d4[1]^2)/10
+        self.d1 = np.sqrt((d1[0])^2+(d1[1])^2)/self.u
+        self.d2 = np.sqrt(d2[0]^2+d2[1]^2)/self.u
+        self.d3 = np.sqrt(d3[0]^2+d3[1]^2)/self.u
+        self.d4 = np.sqrt(d4[0]^2+d4[1]^2)/self.u
         print(d1,d2,d3,d4)
 
     def set_r(self, r=33.5):
@@ -143,7 +145,7 @@ class Motor(BaseController):
         Args:
             r (float, radius(mm)): radius of wheels. Defaults to 33.5.
         """
-        self.r = r/10
+        self.r = r/self.u
 
     @staticmethod
     def add_cls_specific_arguments(parent):
