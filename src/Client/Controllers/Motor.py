@@ -19,6 +19,7 @@ class Motor(BaseController):
             servos(map) : establish connection of moteus boards and pi3hat
         """
 
+        super().__init__()
         self.timeout = 0.02
         self.u = 1
     
@@ -54,6 +55,8 @@ class Motor(BaseController):
             end (timer): sets timer for continuous runtime.
             results(complier) : runs the compiler (cmd) applies to all moteus boards via self.transport
         """
+
+        super().run(action)
 
         ### Extracts from the ACTION sent
         vx = getattr(action, 'vx')
