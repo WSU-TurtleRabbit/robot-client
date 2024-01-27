@@ -1,14 +1,14 @@
 #! /usr/bin/env python3 -B
 
 class Action:
-    def __init__(self, vx: float, vy: float, omega: float, kick: bool, dribble: float):
+    def __init__(self, vx: float, vy: float, omega: float, kick: int, dribble: float):
         """_summary_
             Object for initialise action commands, encode / decode strings for UDP transportation.
         Args:
             vx (float): wanted velocity for x direction
             vy (float): wanted velocity for y direction
             omega (float): wanted angular velocity (radians)
-            kick (bool): wanted kicker to kick (Yes/No)
+            kick (bool): wanted kicker to kick (1=True,0=False)
             dribble (float): dribbling speed ? 
         """
         self.vx = vx
@@ -37,7 +37,8 @@ class Action:
             Action (Object): new Action object Model for easier attribute access
         """
         vx, vy, omega, kick, dribble = msg.split(" ")
-        args = [float(vx), float(vy), float(omega), bool(kick), float(dribble)]
+        print(msg)
+        args = [float(vx), float(vy), float(omega), int(kick), float(dribble)]
         return Action(*args)
         
     

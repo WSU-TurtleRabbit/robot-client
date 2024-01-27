@@ -6,6 +6,8 @@ import socket
 #from Client.Receivers.BaseReceiver import BaseReceiver
 from Client.Shared.Action import Action
 
+import sys
+
 # Server information
 SERVER = {
     "IP": "",
@@ -22,7 +24,8 @@ class UDP():
         #super().__init__()
 
         # 1. it will try to assign an ID
-        self.id = self.get_robot_id()
+        # self.id = self.get_robot_id()
+        self.id = 1
         self.state = "IDLE"
         print(f"This Robot is now with ID: {self.id}")
         # 2. we create a Socket for sending and receiving on the UDP Server.
@@ -55,8 +58,12 @@ class UDP():
             raise  # Raise an exception
         
         ## sets IP address
+        # match sys.platform:
+        # case 'win':
         #ip = socket.gethostbyname(socket.gethostname()) #WINDOWS ONLY#
+        # case 'linux':
         ip = os.popen("hostname -I").read().strip() #RASPBERRY PI AND LINUX ONLY#
+        ip = ip.split(" ")[0]
 
         isbinding = True
 
@@ -76,7 +83,7 @@ class UDP():
         print(data)
         SERVER["IP"], SERVER["PORT"] = data.decode().split(", ")
         print(SERVER, (SERVER["IP"], SERVER["PORT"]))
-        msg = str(id)
+        msg = str(self.id)
         self.send_message(msg)
 
         return sock, ip, port
@@ -115,7 +122,8 @@ class UDP():
                 new_msg = self.id
             else:
                 try:
-                    Action.decode(msg)
+                    new_action = Action.decode(msg)
+                    print(new_action)
                     new_msg = "received"
                 except Exception:
                     print("error : ", Exception)

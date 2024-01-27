@@ -1,5 +1,3 @@
-#! /usr/bin/env python3
-
 import asyncio
 from Client.Controllers.Motor import Motor
 from Client.Receivers.UDP import UDP
