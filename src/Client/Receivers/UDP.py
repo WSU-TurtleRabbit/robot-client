@@ -4,6 +4,7 @@ import os
 import time
 import socket
 #from Client.Receivers.BaseReceiver import BaseReceiver
+from Client.Shared.Action import Action
 
 # Server information
 SERVER = {
@@ -112,6 +113,12 @@ class UDP():
             # if the message is ping : sends the id
             if msg == "ping":
                 new_msg = self.id
+            else:
+                try:
+                    Action.decode(msg)
+                    new_msg = "received"
+                except Exception:
+                    print("error : ", Exception)
             # else:
             #     try:
             #         # try to check the message 

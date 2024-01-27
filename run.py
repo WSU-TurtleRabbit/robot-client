@@ -2,17 +2,18 @@
 
 import asyncio
 from Client.Controllers.Motor import Motor
-from Client.Shared.Action import Action
+from Client.Receivers.UDP import UDP
 
 async def main():
 
     motor = Motor()
 
     await motor.transport.cycle(x.make_stop() for x in motor.servos.values())
+    
+    udp = UDP()
 
-    action = Action(1, 1, 45, False, .0)
-    await motor.run(action)
+    #await motor.run(action)
 
-    await asyncio.sleep(1.0)
+    #await asyncio.sleep(1.0)
 
 asyncio.run(main())

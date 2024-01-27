@@ -36,7 +36,7 @@ class Action:
         Returns:
             Action (Object): new Action object Model for easier attribute access
         """
-        vx, vy, omega, kick, dribble = msg.decode().split(" ")
+        vx, vy, omega, kick, dribble = msg.split(" ")
         args = [float(vx), float(vy), float(omega), bool(kick), float(dribble)]
         return Action(*args)
         
