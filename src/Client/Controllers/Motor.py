@@ -83,6 +83,11 @@ class Motor(BaseController):
 
     def calculate(self, omega, vx, vy):
         """_summary_
+            calculates omniwheels' velocities using args: vx, vy and omega
+            applying the omniwheel equation from:
+            
+            "Modern Robotics: Mechanics, Planning & Control"
+            13.2.1
 
         Args:
             omega (float): angle velocity (rad/s)
@@ -143,7 +148,7 @@ class Motor(BaseController):
         """_summary_
             sets radius of the wheel (applying unit scaling)
         Args:
-            r (float, radius(mm)): radius of wheels. Defaults to 33.5.
+            r (float, radius): radius of wheels. Defaults to 33.5mm.
         """
         self.r = r/self.u
 
