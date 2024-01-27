@@ -45,7 +45,7 @@ class Motor(BaseController):
 
     async def run(self, action):
         """_summary_
-        runs the action (moving) applying to wheels
+            runs the action (moving) applying to wheels
 
         Args:
             action (Action): from action script import action string (vx,vy,omega)
@@ -141,7 +141,7 @@ class Motor(BaseController):
 
     def set_r(self, r=33.5):
         """_summary_
-
+            sets radius of the wheel (applying unit scaling)
         Args:
             r (float, radius(mm)): radius of wheels. Defaults to 33.5.
         """
