@@ -1,3 +1,4 @@
+#! /usr/bin/env python3 -B
 
 class Action:
     def __init__(self, vx: float, vy: float, omega: float, kick: bool, dribble: float):
@@ -36,7 +37,7 @@ class Action:
             Action (Object): new Action object Model for easier attribute access
         """
         vx, vy, omega, kick, dribble = msg.decode().split(" ")
-        args = list(float(vx),float(vy),float(omega),bool(kick),float(dribble))
+        args = [float(vx), float(vy), float(omega), bool(kick), float(dribble)]
         return Action(*args)
         
     
@@ -44,3 +45,12 @@ class Action:
     def __repr__(self): #debug msg
         return f"Action: (vx: {self.vx}, vy: {self.vy}, theta: {self.omega}, kick: {self.kick}, dribble: {self.dribble})"
     
+
+if __name__ == '__main__':
+    action = Action(1.0, 1.0, 1.0, True, 0.0)
+    print(action)
+    message = action.encode()
+
+    message = bytes(message.encode('utf-8'))
+    action = Action.decode(message)
+    print(action)
