@@ -7,5 +7,14 @@ class Action:
         self.kick = kick
         self.dribble = dribble
 
+    @classmethod
+    def decode(cls): 
+        pass
+    
+    @classmethod
+    def encode(cls):
+        pass
+
     def __repr__(self):
-        return f"Action: (vx: {self.vx}, vy: {self.vy}, theta: {self.theta}, kick: {self.kick}, dribble: {self.dribble})"
+        return f"Action: (vx: {self.vx}, vy: {self.vy}, theta: {self.omega}, kick: {self.kick}, dribble: {self.dribble})"
+    
