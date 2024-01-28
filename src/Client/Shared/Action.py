@@ -11,12 +11,14 @@ class Action:
             kick (bool): wanted kicker to kick (1=True,0=False)
             dribble (float): dribbling speed ? 
         """
-        self.vx = vx
-        self.vy = vy
-        self.omega = omega
-        self.kick = kick
-        self.dribble = dribble
+        self.vx = float(vx)
+        self.vy = float(vy)
+        self.omega = float(omega)
+        self.kick = int(kick)
+        self.dribble = float(dribble)
     
+        
+
     def encode(self):
         """_summary_
             Turns everything within the action class into a string
@@ -40,8 +42,6 @@ class Action:
         print(msg)
         args = [float(vx), float(vy), float(omega), int(kick), float(dribble)]
         return Action(*args)
-        
-    
     
     def __repr__(self): #debug msg
         return f"Action: (vx: {self.vx}, vy: {self.vy}, theta: {self.omega}, kick: {self.kick}, dribble: {self.dribble})"
