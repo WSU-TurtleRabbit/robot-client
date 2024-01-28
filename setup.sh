@@ -35,6 +35,6 @@ pip install --upgrade pip
 sudo pip3 install moteus
 pip3 install moteus-pi3hat
 
-sudo apt-get install --yes python3-pyside2* python3-serial python3-can python3-matplotlib python3-qtconsole
-sudo pip3 install asyncqt importlib_metadata pyelftools
-sudo pip3 install --no-deps moteus_gui
+# sudo apt-get install --yes python3-pyside2* python3-serial python3-can python3-matplotlib python3-qtconsole
+# sudo pip3 install asyncqt importlib_metadata pyelftools
+# sudo pip3 install --no-deps moteus_gui
