@@ -9,45 +9,11 @@ import asyncio
 from Client.Shared.Action import Action
 from Client.Controllers.Motor import Motor
 
-def joyaxismotion(event, current_action):
-    speed = 0.
-    if event.value > .08:
-        speed = 2.
-    elif event.value < -.08:
-        speed = -2.
-    elif event.value > .05:
-        speed = 1.
-    elif event.value < -.05:
-        speed = -1.
-    
-    match event.axis:
-        case 1:   
-            setattr(current_action, 'vx', speed)
-        case 0:
-            setattr(current_action, 'vy', speed)
-        case 3:
-            setattr(current_action, 'omega', speed)
-            
-    return current_action
-
-def joybuttondown(event):
-    match event.button:
-        case 0: # A
-            return Action(0., 0., 0., 1, 0.)
-        case 1: # B
-            pass
-        case 3: # X
-            pass
-        case 4: # Y
-            pass
-    return Action(0., 0., 0., 0., 0.)
-
-def joybuttonup(event):
-    return Action(0., 0., 0., 0., 0.)
-    
-
 async def main(motor):
     await motor.transport.cycle(x.make_stop() for x in motor.servos.values())
+
+async def run(motor, action):
+    await motor.run(action)
 
 if __name__ == '__main__':
     os.environ['SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS'] = "1"
@@ -63,24 +29,25 @@ if __name__ == '__main__':
     new_action = Action(0., 0., 0., 0., 0.)
     true = True
     while true:
+        joyaxismotion = []
         for event in pygame.event.get():
-            print(f"{datetime.now().strftime('%H:%M:%S')} [EVENT] {event.type}")
+            # print(f"{datetime.now().strftime('%H:%M:%S')} [EVENT] {event.type}")
             match event.type:
                 case pygame.QUIT:
                     true = False
 
                 case pygame.JOYAXISMOTION:
-                    action = new_action
-                    new_action = joyaxismotion(event, action)
+                    if event.value > 0.5 or event.value < -0.5:
+                        joyaxismotion.append(event)
                     
                 case pygame.JOYBALLMOTION:
                     pass
                     
                 case pygame.JOYBUTTONDOWN:
-                    new_action = joybuttondown(event)
+                    pass
                     
                 case pygame.JOYBUTTONUP:
-                    new_action = joybuttonup(event)
+                    pass
 
                 case pygame.JOYHATMOTION:
                     pass
@@ -94,10 +61,9 @@ if __name__ == '__main__':
                 case pygame.JOYDEVICEREMOVED:
                     del joysticks[event.instance_id]
                     print(f"{event.instance_id}")
-            
-            if isinstance(new_action, Action):
-                print(new_action)
-                motor.run(new_action)
+       
+        if len(joyaxismotion) > 0:
+            print(joyaxismotion) 
 
                           
     # pygame.display.flip()
