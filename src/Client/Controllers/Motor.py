@@ -39,7 +39,7 @@ class Motor(BaseController):
                 id: moteus.Controller(id=id, transport=self.transport)
                 for id in self.servo_bus_map.keys()
             }
-        # self.set_b() # sets wheel degrees
+        # self.set_b() # sets wheel degrees 
         self.set_d_and_b() # sets distance to centre from each wheel
         self.set_r() # sets radius of the wheel
         print("Motor Controller initialised") #END
@@ -85,7 +85,6 @@ class Motor(BaseController):
             # print(results)
         #stops after the timer has ran out
         await self.transport.cycle(x.make_stop() for x in self.servos.values())
-
 
     def calculate(self, vw, vx, vy):
         """_summary_
@@ -147,7 +146,7 @@ class Motor(BaseController):
     #     self.b3 = np.radians(b3)
     #     self.b4 = np.radians(b4)
 
-    def set_d_and_b(self, d1=(61,35), d2=(50,-50), d3=(-50,-50), d4=(-61,32)):
+    def set_d_and_b(self, d1=(63.869,36.875), d2=(52.149,-52.149), d3=(-52.149,-52.149), d4=(-63.869,36.875)):
         """_summary_
             Sets the distance of each wheels from the centre using Pythagorus Theorum.
 
