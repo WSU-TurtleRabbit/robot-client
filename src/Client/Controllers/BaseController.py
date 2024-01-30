@@ -10,6 +10,7 @@ class BaseController:
             raise TypeError(f"unexpected type: Action, got: {action.__class__}")
         
     def listen(self):
+        assert self.recv is not None, "pipe() needs to be called before listen()"
         while True:
             action = self.recv.recv()
             self.run(action)
