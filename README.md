@@ -13,3 +13,10 @@ chmod 755 setup.sh
 ./setup.sh
 pip3 install --editable .[prod]
 ```
+
+## Usage
+To start the robot's client, use the following commands:
+```bash
+chmod 755 run.py
+sudo ./run.py
+```
