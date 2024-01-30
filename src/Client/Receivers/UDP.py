@@ -13,6 +13,8 @@ SERVER = {
     "IP": "",
     "PORT": ""
 }
+c = time.localtime()
+Time= time.strftime("%H:%M:%S",c)
 #class UDP(BaseReceiver):
 class UDP():
 
@@ -24,12 +26,12 @@ class UDP():
         #super().__init__()
 
         # 1. it will try to assign an ID
-        # self.id = self.get_robot_id()
-        self.id = 1
-        self.state = "IDLE"
-        print(f"This Robot is now with ID: {self.id}")
         # 2. we create a Socket for sending and receiving on the UDP Server.
-        self.sock, self.ip, self.port = self.create_sock()
+        self.create_sock()
+        # self.id = self.get_robot_id()
+        
+        self.state = "IDLE"
+       
         # After everything has been set, the robot will start listening continuously
         # self.listen()
     
@@ -44,14 +46,14 @@ class UDP():
             sock, IP address and Port 
         """
         # Initialise Socket
-        sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        bsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
-        bsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        bsock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.bsock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
+        self.bsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self.bsock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
         # tries to bind broadcast
         try:
-            bsock.bind(("", 12342))
+            self.bsock.bind(("", 12342))
         except Exception as e:
             print("Error in binding Broadcast:", type(e))
             print(e)
@@ -63,30 +65,31 @@ class UDP():
         #ip = socket.gethostbyname(socket.gethostname()) #WINDOWS ONLY#
         # case 'linux':
         ip = os.popen("hostname -I").read().strip() #RASPBERRY PI AND LINUX ONLY#
-        ip = ip.split(" ")[0]
+        self.ip = ip.split(" ")[0]
 
         isbinding = True
 
         while isbinding:
             try:
-                port = random.randint(5000, 9000)
-                sock.bind((ip, port))
-                self.sock = sock
+                self.port = random.randint(5000, 9000)
+                self.sock.bind((self.ip, self.port))
                 isbinding = False
             except Exception as e:
                 print("Error in binding:", e, "Trying again.")
                 pass
             finally:
-                print(ip, port)
+                print(f"Your address is : {self.ip} , {self.port}")
         # listens to broadcast channel for the SERVER IP and PORT info
-        data, addr = bsock.recvfrom(1024)
+        data, addr = self.bsock.recvfrom(1024)
         print(data)
         SERVER["IP"], SERVER["PORT"] = data.decode().split(", ")
         print(SERVER, (SERVER["IP"], SERVER["PORT"]))
-        msg = str(self.id)
+        msg = Time
         self.send_message(msg)
+        data, addr = self.sock.recvfrom(1024)
+        self.id = data.decode()
+        print(self.id)
 
-        return sock, ip, port
 
     
     
@@ -152,7 +155,10 @@ class UDP():
             if new_msg != "":
                 #sends message
                 self.send_message(new_msg)
-                
+    
+    def get_id(self):
+        return self.id
+    
     @staticmethod
     def add_cls_specific_arguments(parent):
         return parent 
