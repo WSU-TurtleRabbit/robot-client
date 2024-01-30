@@ -7,6 +7,8 @@ import time
 import moteus
 import moteus_pi3hat
 
+import asyncio
+
 class Motor(BaseController):
     def __init__(self):
         """_summary_
@@ -21,6 +23,7 @@ class Motor(BaseController):
 
         super().__init__()
 
+        self.timeout = .5
         self.u = 1.
     
         self.servo_bus_map = { 
@@ -63,7 +66,7 @@ class Motor(BaseController):
         vy = getattr(action, 'vy')
         vw = getattr(action, 'vw')
 
-        print(self.calculate(vx, vy, vw))
+        print(f"self.calculate({vx}, {vy}, {vw})")
 
         cmd = [
             self.servos[id+1].make_position(
@@ -74,10 +77,8 @@ class Motor(BaseController):
             ## *This is a backwards for loop*
         ]
 
-        print(cmd)
-
         #initialise timer with : 5
-        end = time.time() + 0.5
+        end = time.time() + 5
         # while the time is still in range
         while time.time() < end :
             # loop velocity
@@ -88,8 +89,8 @@ class Motor(BaseController):
         #stops after the timer has ran out
         await self.transport.cycle(x.make_stop() for x in self.servos.values())
 
-    def _calculate(self, vw, vx, vy):
-        raise DeprecationWarning("_calculate() has been deprecated. use calculate()")
+    def calculate_(self, vw, vx, vy):
+        raise DeprecationWarning(f"{__name__} has been deprecated. use calculate()")
         """_summary_
             calculates omniwheels' velocities using args: vx, vy and omega
             applying the omniwheel equation from:
@@ -113,16 +114,16 @@ class Motor(BaseController):
         vb = np.array([vw, vx, vy])
         vb = np.expand_dims(vb, axis=1)
         H = np.array([[-self.d1, -self.d2, -self.d3, -self.d4],
-        [np.cos(self.b1), np.cos(self.b2), -np.cos(self.b3), -np.cos(self.b4)],
-        [np.sin(self.b1), -np.sin(self.b2), -np.sin(self.b3), np.sin(self.b4)],
+            [np.cos(self.b1), np.cos(self.b2), -np.cos(self.b3), -np.cos(self.b4)],
+            [np.sin(self.b1), -np.sin(self.b2), -np.sin(self.b3), np.sin(self.b4)],
         ])
 
         w = (H.T@vb)/self.r
         return w
     
 
-    def _calculate(self, vw, vx, vy):
-        raise DeprecationWarning("_calculate() has been deprecated, use calculate()")
+    def calculate_(self, vw, vx, vy):
+        raise DeprecationWarning(f"{__name__} has been deprecated, use calculate()")
         self.set_r(self.r/1000)
         uv =  np.array([
             (1. / self.r) * ((np.cos(self.b1)*(-0.036875 * vw + vx)+np.sin(self.b1) * (0.063869* vw + vy))),
@@ -218,6 +219,11 @@ class Motor(BaseController):
         self.r = r/self.u
 
         print(f"{self.r=}")
+
+    def listen(self):
+        while True:
+            action = self.recv.recv()
+            asyncio.run(self.run(action))
 
     @staticmethod
     def add_cls_specific_arguments(parent):

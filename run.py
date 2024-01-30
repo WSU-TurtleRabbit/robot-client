@@ -1,17 +1,44 @@
-import asyncio
-from Client.Controllers.Motor import Motor
-from Client.Receivers.UDP import UDP
+#! /usr/bin/python3
 
-async def main():
+from multiprocessing import Process, Queue
+
+from Client.Controllers.Motor import Motor
+from Client.Controllers.Kicker import Kicker
+
+from Client.Receivers.UDP import UDP
+import asyncio
+
+def listen(queue, pipes):
+    while True:
+        if not queue.empty():
+            action = queue.get()
+            for pipe in pipes:
+                pipe.send(action)
+
+if __name__ == '__main__':
+    queue = Queue()
+    listener = UDP()
+    producer = Process(target=listener.listen, args=(queue,))
+    producer.start()
 
     motor = Motor()
+    # kicker = Kicker()
 
-    await motor.transport.cycle(x.make_stop() for x in motor.servos.values())
+    pipes = [motor.pipe()]
+
+    consumer = Process(target=listen, args=(queue, pipes,))
+    consumer.start()
+
+    motor_ = Process(target=motor.listen)
+    # kicker_ = kicker.listen()
+
+    motor_.start()
+    # kicker_.start()
+
+    producer.join()
+    consumer.join()
+
+    motor_.join()
+    # kicker_.join()
+
     
-    udp = UDP()
-
-    #await motor.run(action)
-
-    #await asyncio.sleep(1.0)
-
-asyncio.run(main())

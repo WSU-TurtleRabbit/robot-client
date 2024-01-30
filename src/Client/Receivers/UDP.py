@@ -31,7 +31,7 @@ class UDP():
         # 2. we create a Socket for sending and receiving on the UDP Server.
         self.sock, self.ip, self.port = self.create_sock()
         # After everything has been set, the robot will start listening continuously
-        self.listen()
+        # self.listen()
     
     def create_sock(self):
         """_summary_
@@ -105,7 +105,7 @@ class UDP():
     
     
         ## This functions provides a loop for recieving message
-    def listen(self):
+    def listen(self, queue):
         """_summary_
             This function is used for constant listen to the UDP socket for messages
             
@@ -123,7 +123,11 @@ class UDP():
             else:
                 try:
                     new_action = Action.decode(msg)
-                    print(new_action)
+                    # print(new_action)
+                    if not queue.full():
+                        queue.put(new_action)
+                    else:
+                        print(f"error: queue full; {new_action} was dropped")
                     new_msg = "received"
                 except Exception:
                     print("error : ", Exception)
@@ -148,10 +152,7 @@ class UDP():
             if new_msg != "":
                 #sends message
                 self.send_message(new_msg)
-
-
-
-
+                
     @staticmethod
     def add_cls_specific_arguments(parent):
         return parent 
