@@ -25,15 +25,15 @@ if __name__ == '__main__':
     producer.run()
 
     motor = Motor()
-    kicker = Ardunio()
+    ardunio = Ardunio()
 
-    pipes = [motor.pipe(), kicker.pipe()]
+    pipes = [motor.pipe(), ardunio.pipe()]
 
     consumer = Process(target=listen, args=(queue, pipes,))
     consumer.run()
 
     m_ = Process(target=motor.listen)
-    k_ = Process(target=kicker.listen)
+    a_ = Process(target=ardunio.listen)
 
     m_.run()
-    k_.run()
+    a_.run()

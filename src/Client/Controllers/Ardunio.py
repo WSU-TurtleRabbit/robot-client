@@ -14,19 +14,7 @@ class Ardunio(BaseController):
         if getattr(action, 'kick'):
             self.serial.write(b'K')
 
-        try:
-            dribble = getattr(action, 'dribble')
-            match dribble:
-                case 1:
-                    self.serial.write('K1')
-                case 2:
-                    self.serial.write('K2')
-                case 3:
-                    self.serial.write('K3')
-                case 4:
-                    self.serial.write('K4')
-        except ValueError:
-            pass
+        dribble = getattr(action, 'dribble')
 
     @staticmethod
     def add_cls_specific_arguments(parent):
