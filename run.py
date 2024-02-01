@@ -1,6 +1,8 @@
 #! /usr/bin/python3
 
 from multiprocessing import Process, Queue
+import sys
+import glob
 
 from Client.Controllers.Motor import Motor
 from Client.Controllers.Ardunio import Ardunio
@@ -25,7 +27,12 @@ if __name__ == '__main__':
     producer.run()
 
     motor = Motor()
-    ardunio = Ardunio()
+
+    device = '/dev/cu.usbmodem101' #macOS
+    if sys.platform == 'linux':
+        device = glob.glob('/etc/ttyACM*')[0] #rpi
+
+    ardunio = Ardunio(device)
 
     pipes = [motor.pipe(), ardunio.pipe()]
 

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "Client"
-requires-python = ">=3.7.12"
+requires-python = ">=3.9"
 dependencies = [
     "numpy",
     "argparse",
