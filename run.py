@@ -25,7 +25,7 @@ if __name__ == '__main__':
     producer.start()
 
     motor = Motor()
-    # kicker = Kicker()
+    kicker = Kicker()
 
     pipes = [motor.pipe()]
 
@@ -33,15 +33,15 @@ if __name__ == '__main__':
     consumer.start()
 
     motor_ = Process(target=motor.listen)
-    # kicker_ = kicker.listen()
+    kicker_ = kicker.listen()
 
     motor_.start()
-    # kicker_.start()
+    kicker_.start()
 
     producer.join()
     consumer.join()
 
     motor_.join()
-    # kicker_.join()
+    kicker_.join()
 
     

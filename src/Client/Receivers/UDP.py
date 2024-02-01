@@ -9,10 +9,6 @@ from Client.Shared.Action import Action
 import sys
 
 # Server information
-SERVER = {
-    "IP": "",
-    "PORT": ""
-}
 c = time.localtime()
 Time= time.strftime("%H:%M:%S",c)
 #class UDP(BaseReceiver):
@@ -30,7 +26,7 @@ class UDP():
         self.create_sock()
         # self.id = self.get_robot_id()
         
-        self.state = "IDLE"
+        self.state = "ACTIVE"
        
         # After everything has been set, the robot will start listening continuously
         # self.listen()
@@ -62,33 +58,35 @@ class UDP():
         ## sets IP address
         # match sys.platform:
         # case 'win':
-        #ip = socket.gethostbyname(socket.gethostname()) #WINDOWS ONLY#
+        # ip = socket.gethostbyname(socket.gethostname()) #WINDOWS ONLY#
         # case 'linux':
         ip = os.popen("hostname -I").read().strip() #RASPBERRY PI AND LINUX ONLY#
         self.ip = ip.split(" ")[0]
 
-        isbinding = True
+        bind_success = False
 
-        while isbinding:
+        while not bind_success:
             try:
                 self.port = random.randint(5000, 9000)
-                self.sock.bind((self.ip, self.port))
-                isbinding = False
+                self.addr = tuple([self.ip, self.port])
+                self.sock.bind(self.addr)
+                print(f"Your address is : {self.addr}")
+
+                bind_success = True
             except Exception as e:
                 print("Error in binding:", e, "Trying again.")
                 pass
             finally:
-                print(f"Your address is : {self.ip} , {self.port}")
+                print("Socket Binded : ", bind_success)
         # listens to broadcast channel for the SERVER IP and PORT info
         data, addr = self.bsock.recvfrom(1024)
-        print(data)
-        SERVER["IP"], SERVER["PORT"] = data.decode().split(", ")
-        print(SERVER, (SERVER["IP"], SERVER["PORT"]))
-        msg = Time
+        self.server = eval(data.decode())
+        print(self.server)
+        msg = "I am new"
         self.send_message(msg)
         data, addr = self.sock.recvfrom(1024)
         self.id = data.decode()
-        print(self.id)
+        print("New ID :",self.id)
 
 
     
@@ -100,13 +98,29 @@ class UDP():
             msg (string):string of the message that you wanted to send
         """
         msg = bytes(msg.encode('utf-8'))
+        print(type(self.server), self.server)
         # the socket will send message to the server address and port
-        self.sock.sendto(msg, (SERVER["IP"], int(SERVER["PORT"])))
+        self.sock.sendto(msg,self.server)
         # feedback on the client when the message has been sent
         print(f"Message : {msg} has been sent")
 
     
-    
+    def broadcast_listen(self):
+        data, addr = self.bsock.recvfrom(1024)
+        cmd = data.decode()
+        if cmd == "ping":
+            msg = self.id
+        elif cmd =="stop":
+            self.state = "STOP"
+            msg = "stop"
+            #drop queue here
+        elif cmd =="start" :
+            self.state = "ACTIVE"
+            msg = "start"
+        if msg != "":
+            self.send_message(msg)
+            msg = ""
+
         ## This functions provides a loop for recieving message
     def listen(self, queue):
         """_summary_
@@ -120,20 +134,20 @@ class UDP():
             # if there is a message : decode
             msg = data.decode()
 
-            # if the message is ping : sends the id
-            if msg == "ping":
-                new_msg = self.id
-            else:
-                try:
-                    new_action = Action.decode(msg)
-                    # print(new_action)
-                    if not queue.full():
-                        queue.put(new_action)
-                    else:
-                        print(f"error: queue full; {new_action} was dropped")
-                    new_msg = "received"
-                except Exception:
-                    print("error : ", Exception)
+            # # if the message is ping : sends the id
+            # if msg == "ping":
+            #     new_msg = self.id
+            # else:
+            try:
+                new_action = Action.decode(msg)
+                # print(new_action)
+                if not queue.full():
+                    queue.put(new_action)
+                else:
+                    print(f"error: queue full; {new_action} was dropped")
+                new_msg = "received"
+            except Exception:
+                print("error : ", Exception)
             # else:
             #     try:
             #         # try to check the message 
