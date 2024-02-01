@@ -3,7 +3,7 @@
 from multiprocessing import Process, Queue
 
 from Client.Controllers.Motor import Motor
-from Client.Controllers.Kicker import Kicker
+from Client.Controllers.Ardunio import Ardunio
 
 from Client.Receivers.UDP import UDP
 import argparse
@@ -22,26 +22,18 @@ if __name__ == '__main__':
     queue = Queue()
     listener = UDP()
     producer = Process(target=listener.listen, args=(queue,))
-    producer.start()
+    producer.run()
 
     motor = Motor()
-    kicker = Kicker()
+    kicker = Ardunio()
 
-    pipes = [motor.pipe()]
+    pipes = [motor.pipe(), kicker.pipe()]
 
     consumer = Process(target=listen, args=(queue, pipes,))
-    consumer.start()
+    consumer.run()
 
-    motor_ = Process(target=motor.listen)
-    kicker_ = kicker.listen()
+    m_ = Process(target=motor.listen)
+    k_ = Process(target=kicker.listen)
 
-    motor_.start()
-    kicker_.start()
-
-    producer.join()
-    consumer.join()
-
-    motor_.join()
-    kicker_.join()
-
-    
+    m_.run()
+    k_.run()
