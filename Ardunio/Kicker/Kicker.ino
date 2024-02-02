@@ -1,4 +1,4 @@
-const int outputPin = 8;
+const int outputPin = 8;s
 void pulsePin(int outputPin, int pulseTime); // function statement for compiling
 
 void setup() {
@@ -13,6 +13,7 @@ void loop() {
     if(data == 'K') { // if the data recv'ed is 'K' (note: this is case sensitive)
       pulsePin(outputPin, 200000); 
     }
+    #TODO add dribble controls 
   }
 }
 
@@ -25,6 +26,6 @@ void pulsePin(int outputPin, int pulseTime){
   * pulseTime (int): length of pulse in microseconds
   */
   digitalWrite(outputPin, HIGH);
-  delayMicroseconds(pulseTime);
+  delayMicroseconds(pulseTime); #TODO use non blocking delay
   digitalWrite(outputPin,LOW);
 }
