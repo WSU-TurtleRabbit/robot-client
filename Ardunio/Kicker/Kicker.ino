@@ -1,4 +1,4 @@
-const int outputPin = 8;s
+const int outputPin = 8;
 void pulsePin(int outputPin, int pulseTime); // function statement for compiling
 
 void setup() {
