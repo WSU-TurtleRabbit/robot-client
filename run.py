@@ -36,8 +36,8 @@ def detect_ardunio_device():
 
     try:
         device = glob.glob(location)[0]
-    except:
-        IndexError("no ardunio device found")
+        print(glob.glob(location))
+    except IndexError:
         device = None
     
     return device

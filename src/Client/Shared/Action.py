@@ -1,6 +1,7 @@
 #! /usr/bin/env python3 -B
 
 class Action:
+    __version__ = '0.0.1'
     def __init__(self, id: int, vx: float, vy: float, vw: float, kick: int, dribble: float):
         """_summary_
             Object for initialise action commands, encode / decode strings for UDP transportation.
@@ -12,12 +13,14 @@ class Action:
             kick (bool): wanted kicker to kick (1=True,0=False)
             dribble (float): dribbling speed ? 
         """
-        self.id = int(id)
-        self.vx = float(vx)
-        self.vy = float(vy)
-        self.vw = float(vw)
-        self.kick = int(kick)
-        self.dribble = float(dribble)
+        self.version = '0.0.1'
+
+        self.id = id
+        self.vx = vx
+        self.vy = vy
+        self.vw = vw
+        self.kick = kick
+        self.dribble = dribble
     
     def encode(self):
         """_summary_
@@ -42,16 +45,6 @@ class Action:
         print(msg)
         args = [int(id), float(vx), float(vy), float(vw), int(kick), float(dribble)]
         return Action(*args)
-    
+
     def __repr__(self): #debug msg
         return f"Action: (id: {self.id}) (vx: {self.vx}, vy: {self.vy}, theta: {self.vw}, kick: {self.kick}, dribble: {self.dribble})"
-    
-
-if __name__ == '__main__':
-    action = Action(1, 1.0, 1.0, 1.0, True, 0.0)
-    print(action)
-    message = action.encode()
-
-    message = bytes(message.encode('utf-8'))
-    action = Action.decode(message)
-    print(action)

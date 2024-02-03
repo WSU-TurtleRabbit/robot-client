@@ -116,6 +116,7 @@ class UDP():
             msg_rep(str) : messages to be sent to the server
             new_action(str) : Action string received from server
         """
+
         while self.state == "ACTIVE":
             msg_rec = None
             msg_rep = None 
@@ -170,10 +171,11 @@ class UDP():
 
         ## This functions provides a loop for recieving message
     def listen(self, queue):
+        raise DeprecationWarning('listen() is deprecated, use listen_udp() and listen_broadcast()')
         """
             Function no longer in use - replaced by "listen_udp" and "listen_broadcast"
         """
-        raise Exception(" Function No longer in use")
+        return None
 
         
     
