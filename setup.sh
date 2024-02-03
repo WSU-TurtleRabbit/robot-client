@@ -1,12 +1,7 @@
 #! /usr/bin/bash
 
-# if [[ "$$" -ne (sh -c 'echo $PPID' && :) ]]; then
-#     echo "use '. ./$0'"
-#     exit 1
-# fi 
-
 sudo apt-get update
-# sudo apt-get upgrade --yes
+sudo apt-get upgrade --yes
 
 # [[ ! -d $HOME/.pyenv ]] && curl https://pyenv.run/ | bash
 
@@ -26,10 +21,8 @@ sudo apt-get update
 # pyenv global 3.7.12
 sudo rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED*
 
-libbcm='/lib/aarch64-linux-gnu/libbcm_host.so'
-[[ -f $libbcm.0 ]] && sudo mv $libbcm.0 $libbcm
-
-# pyenv uninstall -f 3.7.12
+libbcm_host='/lib/aarch64-linux-gnu/libbcm_host.so'
+[[ -f $libbcm_host.0 ]] && sudo mv $libbcm_host.0 $libbcm_host
 
 pip install --upgrade pip
 sudo pip3 install moteus

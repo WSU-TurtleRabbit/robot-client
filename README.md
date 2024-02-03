@@ -9,14 +9,14 @@ pip3 install --editable .
 ```
 or to set up the enviroment on a raspberry pi, use the following commands:
 ```bash
-chmod 755 setup.sh
-sudo ./Downloads/setup.sh
+chmod u+x setup.sh
+sudo ./setup.sh
 pip3 install --editable .[prod]
 ```
 
 ## Usage
-To start the robot's client, use the following commands:
+To start the client on the robot, use the following commands:
 ```bash
-chmod 755 run.py
+chmod u+x run.py
 sudo ./run.py
 ```
