@@ -18,28 +18,38 @@ class UDP():
     def __init__(self):
         """_summary_
             Initialising UDP Client Reciver
+        Params: 
+            id (int) : Robot Client's ID
+            server (tuple) : the server's UDP address (ip, port)
+            ip (str) : Robot's ip address
+            port (int) : Robot's port number
+            bsock (socket) : Robot's Broadcast Channel (receive only)
+            sock (socket) : Robot's UDP Channel (send and receive)
+            state (str) : determines the state of Robot Client
         """
-        #super().__init__()
+        self.id = None
+        self.server = tuple()
+        self.ip = None
+        self.port = None
+        self.bsock = None
+        self.sock = None
+        self.state = "IDLE"
 
-        # 1. it will try to assign an ID
-        # 2. we create a Socket for sending and receiving on the UDP Server.
-        self.create_sock()
-        # self.id = self.get_robot_id()
+
+        self.create_sock() # Initialising Sockets.
+        self.listen_broadcast() # can be put as part of multiprocessing
+        #self.listen_udp()
         
-        self.state = "ACTIVE"
-       
-        # After everything has been set, the robot will start listening continuously
-        # self.listen()
+       # self.listen()
     
     def create_sock(self):
         """_summary_
-            Inits sockets for Robot Client
+            Initialise sockets - Broadcast and UDP Channels.
+            These 
         Params: 
             sock (socket): socket for sending and receiving Direct UDP
-            bsock (socket): socket for recieving broadcast messages
-            isBinding (bool): Boolean to determine if UDP has successfully binded to IP address and port 
-        Returns:
-            sock, IP address and Port 
+            bsock (socket): socket for recieving broadcast messages 
+            bind_success (bool): Boolean to determine if UDP has successfully binded to IP address and port 
         """
         # Initialise Socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -56,12 +66,9 @@ class UDP():
             raise  # Raise an exception
         
         ## sets IP address
-        # match sys.platform:
-        # case 'win':
-        # ip = socket.gethostbyname(socket.gethostname()) #WINDOWS ONLY#
-        # case 'linux':
-        ip = os.popen("hostname -I").read().strip() #RASPBERRY PI AND LINUX ONLY#
-        self.ip = ip.split(" ")[0]
+        self.ip = socket.gethostbyname(socket.gethostname()) #WINDOWS ONLY#
+        if(sys.platform == 'linux'):
+            self.ip = os.popen("hostname -I").read().strip().split(" ")[0] #RASPBERRY PI AND LINUX ONLY#
 
         bind_success = False
 
@@ -78,94 +85,97 @@ class UDP():
                 pass
             finally:
                 print("Socket Binded : ", bind_success)
-        # listens to broadcast channel for the SERVER IP and PORT info
-        data, addr = self.bsock.recvfrom(1024)
-        self.server = eval(data.decode())
-        print(self.server)
-        msg = "I am new"
-        self.send_message(msg)
-        data, addr = self.sock.recvfrom(1024)
-        self.id = data.decode()
-        print("New ID :", self.id)
     
     def send_message(self, msg):
         """_summary_
-            This function is used to encode string and sends message to the server.
+            This function is used to encode string into bytes, then sends message to the server.
         Args:
             msg (string):string of the message that you wanted to send
         """
+        if self.id != None:
+            msg = f"{self.id}, {msg}"
+            print(msg)
         msg = bytes(msg.encode('utf-8'))
-        print(type(self.server), self.server)
         # the socket will send message to the server address and port
         self.sock.sendto(msg,self.server)
         # feedback on the client when the message has been sent
         print(f"Message : {msg} has been sent")
 
-    
-    def broadcast_listen(self):
-        data, addr = self.bsock.recvfrom(1024)
-        cmd = data.decode()
-        if cmd == "ping":
-            msg = self.id
-        elif cmd =="stop":
-            self.state = "STOP"
-            msg = "stop"
-            #drop queue here
-        elif cmd =="start" :
-            self.state = "ACTIVE"
-            msg = "start"
-        if msg != "":
-            self.send_message(msg)
-            msg = ""
+    def listen_udp(self,queue):
+        """_summary_
+            This function is used to trigger the listening event of UDP Server during 
+            Robot state = ACTIVE
+            
+            Queue from multiprocessing needs to be passed in to queue Actions for future process
+
+        Args: 
+            queue(Queue) : the queue of actions
+        Params:
+            data (bytes): UDP (byte) message received from server directly  
+            msg_rec(str) : decoded data
+            msg_rep(str) : messages to be sent to the server
+            new_action(str) : Action string received from server
+        """
+        while self.state == "ACTIVE":
+            msg_rec = None
+            msg_rep = None 
+            data, addr = self.sock.recvfrom(1024)
+            msg_rec = data.decode()
+            print(f"new_message received : {msg_rec}")
+            if self.id ==None:
+                self.id = int(msg_rec)
+                #self.send_message(f"id assigned {self.id}")
+                print(f"This robot is now id : {self.id}")
+            elif type(msg_rec) is str:
+                try:
+                    new_action = Action.decode(msg_rec)
+                    # print(new_action)
+                    if not queue.full():
+                        queue.put(new_action)
+                        msg_rep = "Action Added"
+                    else:
+                        print(f"error: queue full; {new_action} was dropped")
+                        msg_rep = "Action Full, dropped"
+                    self.send_message(msg_rep)
+                except Exception:
+                    print("error : ", Exception)
+                # else:
+        #drop queue here
+
+    def listen_broadcast(self):
+        """_summary_
+            This is used to receive broadcast messages from the server
+        """
+        while self.state != "DEAD":            
+            msg = None
+            data, addr = self.bsock.recvfrom(1024)
+            cmd = data.decode()
+            if isinstance(eval(cmd),tuple) and self.id == None:
+                self.server = eval(cmd)
+                print(self.server)
+                msg = "new"
+                self.state = "ACTIVE" #START UDP LISTENER
+            elif cmd == "ping":
+                msg = self.id
+            elif cmd =="stop":
+                self.state = "STOP"
+                msg = "stop"
+                #drop queue here ?
+            elif cmd =="start" :
+                self.state = "ACTIVE"
+                msg = "start"
+            if msg != None:
+                self.send_message(msg)
+                return #debug purposes
 
         ## This functions provides a loop for recieving message
     def listen(self, queue):
-        """_summary_
-            This function is used for constant listen to the UDP socket for messages
-            
         """
-        # while it is active
-        while self.state != "STOP":
-            # enables data recieve
-            data, addr = self.sock.recvfrom(1024)
-            # if there is a message : decode
-            msg = data.decode()
+            Function no longer in use - replaced by "listen_udp" and "listen_broadcast"
+        """
+        raise Exception(" Function No longer in use")
 
-            # # if the message is ping : sends the id
-            # if msg == "ping":
-            #     new_msg = self.id
-            # else:
-            try:
-                new_action = Action.decode(msg)
-                # print(new_action)
-                if not queue.full():
-                    queue.put(new_action)
-                else:
-                    print(f"error: queue full; {new_action} was dropped")
-                new_msg = "received"
-            except Exception:
-                print("error : ", Exception)
-            # else:
-            #     try:
-            #         # try to check the message 
-            #         # the robot will be recieving the world and ball dictionary message
-            #         world, ball = map(int, msg.split(",", 1))
-            #         # first we wanted to know where the ball and robot is
-            #         vx, vy, w = self.calculate_velocities(world, ball)
-
-            #         # since all velocities are calculated, the ball will now move
-            #         self.move()
-            #         #  = map(int, msg.split(",", 3))
-            #         # self.move(vx, vy, w, rt)
-            #         # new_msg = "Moving"
-            #     except Exception as e:
-            #         print(e)
-            #         raise
-            
-            # if we have a message to send
-            if new_msg != "":
-                #sends message
-                self.send_message(new_msg)
+        
     
     def get_id(self):
         return self.id

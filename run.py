@@ -51,7 +51,7 @@ if __name__ == '__main__':
 
     queue = Queue()
     listener = UDP()
-    producer = Process(target=listener.listen, args=(queue,))
+    producer = Process(target=listener.listen_udp, args=(queue,))
     producer.run()
 
     motor = Motor()
