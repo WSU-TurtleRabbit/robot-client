@@ -17,6 +17,31 @@ def listen(queue, pipes):
             for pipe in pipes:
                 pipe.send(action)
 
+def detect_ardunio_device():
+    '''
+    very unreliable ardunio detection function
+    it assumes a single serial device is connected at all times...
+
+    needs improvement :D
+    '''
+    location = None
+    if sys.platform == 'linux':
+        location = '/dev/ttyACM*'
+
+    if sys.platform == 'darwin':
+        location = '/dev/cu.usbmodem*'
+
+    if sys.platform == 'win':
+        location = 'COM*'
+
+    try:
+        device = glob.glob(location)[0]
+    except:
+        IndexError("no ardunio device found")
+        device = None
+    
+    return device
+
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -28,10 +53,7 @@ if __name__ == '__main__':
 
     motor = Motor()
 
-    device = '/dev/cu.usbmodem101' #macOS
-    if sys.platform == 'linux':
-        device = glob.glob('/etc/ttyACM*')[0] #rpi
-
+    device = detect_ardunio_device()
     ardunio = Ardunio(device)
 
     pipes = [motor.pipe(), ardunio.pipe()]

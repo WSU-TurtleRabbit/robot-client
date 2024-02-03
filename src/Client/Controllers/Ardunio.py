@@ -14,7 +14,7 @@ class Ardunio(BaseController):
         if getattr(action, 'kick'):
             self.serial.write(b'K')
 
-        dribble = getattr(action, 'dribble')
+        dribble = getattr(action, 'dribble')        
 
     @staticmethod
     def add_cls_specific_arguments(parent):

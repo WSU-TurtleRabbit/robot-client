@@ -86,10 +86,7 @@ class UDP():
         self.send_message(msg)
         data, addr = self.sock.recvfrom(1024)
         self.id = data.decode()
-        print("New ID :",self.id)
-
-
-    
+        print("New ID :", self.id)
     
     def send_message(self, msg):
         """_summary_

@@ -19,8 +19,6 @@ class Action:
         self.kick = int(kick)
         self.dribble = float(dribble)
     
-        
-
     def encode(self):
         """_summary_
             Turns everything within the action class into a string
