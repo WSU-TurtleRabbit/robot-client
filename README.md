@@ -10,7 +10,7 @@ pip3 install --editable .
 or to set up the enviroment on a raspberry pi, use the following commands:
 ```bash
 chmod 755 setup.sh
-./setup.sh
+sudo ./Downloads/setup.sh
 pip3 install --editable .[prod]
 ```
 
