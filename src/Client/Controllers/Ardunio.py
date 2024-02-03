@@ -18,4 +18,6 @@ class Ardunio(BaseController):
 
     @staticmethod
     def add_cls_specific_arguments(parent):
+        parser = parent.add_argument_group('ardunio')
+        parser.add_argument('--device', type=str, default='')
         return parent

@@ -45,6 +45,9 @@ def detect_ardunio_device():
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
+    parser = UDP.add_cls_specific_arguments(parser)
+    parser = Motor.add_cls_specific_arguments(parser)
+    parser = Ardunio.add_cls_specific_arguments(parser)
 
     queue = Queue()
     listener = UDP()
