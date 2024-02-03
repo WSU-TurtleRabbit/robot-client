@@ -24,12 +24,12 @@ sudo apt-get update
 # pyenv update
 # pyenv install 3.7.12
 # pyenv global 3.7.12
-# sudo rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED*
+sudo rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED*
 
 # libbcm='/lib/aarch64-linux-gnu/libbcm_host.so'
 # [[ -f $libbcm.0 ]] && sudo mv $libbcm.0 $libbcm
 
-pyenv uninstall -f 3.7.12
+# pyenv uninstall -f 3.7.12
 
 pip install --upgrade pip
 sudo pip3 install moteus
