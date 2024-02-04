@@ -1,7 +1,6 @@
 #! /usr/bin/env python3 -B
 
 class Action:
-    __version__ = '0.0.1'
     def __init__(self, id: int, vx: float, vy: float, vw: float, kick: int, dribble: float):
         """_summary_
             Object for initialise action commands, encode / decode strings for UDP transportation.

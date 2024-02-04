@@ -1,13 +1,12 @@
 #! /usr/bin/python3
 
 from multiprocessing import Process, Queue
-import sys
-import glob
 
 from Client.Controllers.Motor import Motor
 from Client.Controllers.Ardunio import Ardunio
-
 from Client.Receivers.UDP import UDP
+from Client.Shared.State import State
+
 import argparse
 
 def listen(queue, pipes):
@@ -28,11 +27,11 @@ if __name__ == '__main__':
     kwargs = vars(parser)
 
     queue = Queue()
-    listener = UDP()
-    robot_action_producer = Process(target=listener.listen_udp, args=(queue,))
+    communication = UDP()
+    robot_action_producer = Process(target=communication.listen_udp, args=(queue,))
     robot_action_producer.start()
-    broadcaster = Process(target=listener.listen_broadcast)
-    broadcaster.start()
+    broadcast = Process(target=communication.listen_broadcast)
+    broadcast.start()
 
     motor = Motor()
 
@@ -48,14 +47,10 @@ if __name__ == '__main__':
     consumer = Process(target=listen, args=(queue, pipes,))
     consumer.start()
 
-    motor_action_listener = Process(target=motor.listen)
-    ardunio_action_listener = Process(target=ardunio.listen)
-
-    motor_action_listener.start()
-    ardunio_action_listener.start()
+    actions = [motor.listen, ardunio.listen]
+    
+    subprocesses = [Process(target=x) for x in actions]
+    for subprocess in subprocesses:
+        subprocess.start()
 
     robot_action_producer.join()
-    broadcaster.join()
-    consumer.join()
-    motor_action_listener.join()
-    ardunio_action_listener.join()
