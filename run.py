@@ -17,31 +17,6 @@ def listen(queue, pipes):
             for pipe in pipes:
                 pipe.send(action)
 
-def detect_ardunio_device():
-    '''
-    very unreliable ardunio detection function
-    it assumes a single serial device is connected at all times...
-
-    needs improvement :D
-    '''
-    location = None
-    if sys.platform == 'linux':
-        location = '/dev/ttyACM*'
-
-    if sys.platform == 'darwin':
-        location = '/dev/cu.usbmodem*'
-
-    if sys.platform == 'win':
-        location = 'COM*'
-
-    try:
-        device = glob.glob(location)[0]
-        print(glob.glob(location))
-    except IndexError:
-        device = None
-    
-    return device
-
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
@@ -49,23 +24,38 @@ if __name__ == '__main__':
     parser = Motor.add_cls_specific_arguments(parser)
     parser = Ardunio.add_cls_specific_arguments(parser)
 
+    args = parser.parse_args()
+    kwargs = vars(parser)
+
     queue = Queue()
     listener = UDP()
-    producer = Process(target=listener.listen_udp, args=(queue,))
-    producer.run()
+    robot_action_producer = Process(target=listener.listen_udp, args=(queue,))
+    robot_action_producer.start()
+    broadcaster = Process(target=listener.listen_broadcast)
+    broadcaster.start()
 
     motor = Motor()
 
-    device = detect_ardunio_device()
-    ardunio = Ardunio(device)
+    port = Ardunio.detect_ardunio_device()
+    if not kwargs['ardunio-port'] == "":
+        port = kwargs['ardunio-port']
+
+    baudrate = kwargs['baud-rate']
+    ardunio = Ardunio(port, baudrate)
 
     pipes = [motor.pipe(), ardunio.pipe()]
 
     consumer = Process(target=listen, args=(queue, pipes,))
-    consumer.run()
+    consumer.start()
 
-    m_ = Process(target=motor.listen)
-    a_ = Process(target=ardunio.listen)
+    motor_action_listener = Process(target=motor.listen)
+    ardunio_action_listener = Process(target=ardunio.listen)
 
-    m_.run()
-    a_.run()
+    motor_action_listener.start()
+    ardunio_action_listener.start()
+
+    robot_action_producer.join()
+    broadcaster.join()
+    consumer.join()
+    motor_action_listener.join()
+    ardunio_action_listener.join()
