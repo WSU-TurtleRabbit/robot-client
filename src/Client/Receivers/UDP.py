@@ -94,7 +94,6 @@ class UDP():
         """
         if self.id != None:
             msg = f"{self.id}, {msg}"
-            print(msg)
         msg = bytes(msg.encode('utf-8'))
         # the socket will send message to the server address and port
         self.sock.sendto(msg,self.server)
@@ -127,6 +126,8 @@ class UDP():
                 self.id = int(msg_rec)
                 #self.send_message(f"id assigned {self.id}")
                 print(f"This robot is now id : {self.id}")
+            elif msg_rec == "ping":
+                self.send_message(Time)
             elif type(msg_rec) is str:
                 try:
                     new_action = Action.decode(msg_rec)
@@ -157,7 +158,7 @@ class UDP():
                 msg = "new"
                 self.state = "ACTIVE" #START UDP LISTENER
             elif cmd == "ping":
-                msg = self.id
+                msg = self.id #can be replaced
             elif cmd =="stop":
                 self.state = "STOP"
                 msg = "stop"
