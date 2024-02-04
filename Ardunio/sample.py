@@ -2,16 +2,12 @@ import serial
 from serial.tools import list_ports
 
 def detect_ardunio_device():
-    vid = ''
-    pid = '' 
+    USBVID = [0x2341, 0x2a03]
     devices = list_ports.comports()
-    devices = [x for x in devices if x.vid == vid and x.pid == pid]
-   
-    if not devices:
-        raise ValueError(f"no ardunio devices not found")
-    
-    if len(devices) > 1:
-        raise ValueError(f"found {len(devices) }ardunio devices")
+    devices = [x for x in devices if x.vid in USBVID]
+
+    if not devices or len(devices) > 1:
+        return None
     
     return devices[0].device
 
