@@ -5,7 +5,7 @@ from multiprocessing import Process, Queue
 from Client.Controllers.Motor import Motor
 from Client.Controllers.Ardunio import Ardunio
 from Client.Receivers.UDP import UDP
-from Client.Shared.State import State
+# from Client.Shared.Action import Action
 
 import argparse
 
@@ -28,18 +28,20 @@ if __name__ == '__main__':
 
     queue = Queue()
     communication = UDP()
-    robot_action_producer = Process(target=communication.listen_udp, args=(queue,))
-    robot_action_producer.start()
+    robot_udp_listener = Process(target=communication.listen_udp, args=(queue,))
+    robot_udp_listener.start()
     robot_broadcast_listener = Process(target=communication.listen_broadcast)
     robot_broadcast_listener.start()
+    # action = Action(1, 0., 0., 0., 1, 0.)
+    # queue.put(action)
 
     motor = Motor()
 
     port = Ardunio.detect_ardunio_device()
-    if not kwargs['ardunio-port'] is None:
-        port = kwargs['ardunio-port']
+    if not kwargs['port'] is None:
+        port = kwargs['port']
 
-    baudrate = kwargs['baud-rate']
+    baudrate = kwargs['baudrate']
     ardunio = Ardunio(port, baudrate)
 
     pipes = [motor.pipe(), ardunio.pipe()]
@@ -53,4 +55,9 @@ if __name__ == '__main__':
     for subprocess in subprocesses:
         subprocess.start()
 
-    robot_action_producer.join()
+    robot_udp_listener.join()
+    robot_broadcast_listener.join()
+    consumer.join()
+
+    for subprocess in subprocesses:
+        subprocess.join()
