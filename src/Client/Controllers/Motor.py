@@ -221,10 +221,15 @@ class Motor(BaseController):
 
     def listen(self):
         while True:
-            action = self.pipe[1].recv()
+            action = self.recv[0].recv()
             if not isinstance(action, Action):
                 raise TypeError(f"unexpected type: expected 'Action', got: {action.__class__}")
             asyncio.run(self.run(action))
+    
+    async def run(self, action):
+        if not isinstance(action, Action):
+            raise TypeError(f"unexpected type: expected 'Action', got: {action.__class__}")
+        await self.action(action)
 
     @staticmethod
     def add_cls_specific_arguments(parent):

@@ -11,6 +11,7 @@ class Ardunio(BaseController):
         self.serial = serial.Serial(self.port, self.baudrate)
 
     def action(self, action):
+        print(action)
         if getattr(action, 'kick'):
             self.serial.write(b'K')
 
@@ -30,6 +31,6 @@ class Ardunio(BaseController):
     @staticmethod
     def add_cls_specific_arguments(parent):
         parser = parent.add_argument_group('ardunio')
-        parser.add_argument('--ardunio-port', type=str, default=None)
-        parser.add_argument('--baud-rate', type=int, defaul=12900)
+        parser.add_argument('--port', type=str, default=None)
+        parser.add_argument('--baudrate', type=int, default=12900)
         return parent
