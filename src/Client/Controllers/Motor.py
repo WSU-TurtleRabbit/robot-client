@@ -172,14 +172,14 @@ class Motor(BaseController):
         print(f"{__name__}.calculate({vw=}, {vx=}, {vy=}) = {uv=}")
         return uv
         
-    def set_b(self, b1=120, b2=45, b3=-45, b4=-120):
+    def set_b(self, b1=-120, b2=-45, b3=45, b4=120):
         """_summary_
 
         Args:
-            b1 (int, degrees): wheel degree to centre. Defaults to 120.
-            b2 (int, degrees): wheel degree to centre. Defaults to 45.
-            b3 (int, degrees): wheel degree to centre. Defaults to -45.
-            b4 (int, degrees): wheel degree to centre. Defaults to -120.
+            b1 (int, degrees): wheel degree to centre. Defaults to -120.
+            b2 (int, degrees): wheel degree to centre. Defaults to -45.
+            b3 (int, degrees): wheel degree to centre. Defaults to 45.
+            b4 (int, degrees): wheel degree to centre. Defaults to 120.
             *THESE WILL BE CHANGED INTO RADIANS AFTERWARDS*
         """
         self.b1 = np.radians(b1)
@@ -229,6 +229,3 @@ class Motor(BaseController):
     @staticmethod
     def add_cls_specific_arguments(parent):
         return parent
-    
-if __name__ == '__main':
-    x = np.linspace(0, 100, 11)
