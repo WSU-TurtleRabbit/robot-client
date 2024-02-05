@@ -7,8 +7,12 @@ class BaseController:
 
     def run(self, action):
         if not isinstance(action, Action):
-            raise TypeError(f"unexpected type: Action, got: {action.__class__}")
-        
+            raise TypeError(f"unexpected type: expected 'Action', got: {action.__class__}")
+        self.action(action)
+    
+    def action(self, action):
+        raise NotImplementedError
+    
     def listen(self):
         if not isinstance(self.pipe, tuple):
             raise Exception(f"pipe() needs to be called before listen()")

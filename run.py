@@ -30,13 +30,13 @@ if __name__ == '__main__':
     communication = UDP()
     robot_action_producer = Process(target=communication.listen_udp, args=(queue,))
     robot_action_producer.start()
-    broadcast = Process(target=communication.listen_broadcast)
-    broadcast.start()
+    robot_broadcast_listener = Process(target=communication.listen_broadcast)
+    robot_broadcast_listener.start()
 
     motor = Motor()
 
     port = Ardunio.detect_ardunio_device()
-    if not kwargs['ardunio-port'] == "":
+    if not kwargs['ardunio-port'] is None:
         port = kwargs['ardunio-port']
 
     baudrate = kwargs['baud-rate']

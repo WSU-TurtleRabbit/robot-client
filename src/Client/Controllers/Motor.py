@@ -47,7 +47,7 @@ class Motor(BaseController):
         print("Motor Controller initialised") #END
 
 
-    async def run(self, action):
+    async def action(self, action):
         """_summary_
             runs the action (moving) applying to wheels
 
@@ -58,8 +58,6 @@ class Motor(BaseController):
             end (timer): sets timer for continuous runtime.
             results(complier) : runs the compiler (cmd) applies to all moteus boards via self.transport
         """
-
-        super().run(action)
 
         ### Extracts from the ACTION sent
         vx = getattr(action, 'vx')
@@ -72,7 +70,7 @@ class Motor(BaseController):
             self.servos[id+1].make_position(
                 position=math.nan,
                 velocity=velocity,
-                query=True
+                query=False
             ) for id, velocity in enumerate(self.calculate(vw, vx, vy)) #calculate the velocity and send them back here
             ## *This is a backwards for loop*
         ]
@@ -82,7 +80,7 @@ class Motor(BaseController):
         # while the time is still in range
         while time.time() < end :
             # loop velocity
-            results = await self.transport.cycle(cmd)
+            await self.transport.cycle(cmd)
             # print debug results
             # print(results)
             # pass

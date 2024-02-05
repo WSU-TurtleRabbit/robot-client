@@ -10,8 +10,7 @@ class Ardunio(BaseController):
         self.baudrate = baudrate
         self.serial = serial.Serial(self.port, self.baudrate)
 
-    def run(self, action):
-        super().run(action)
+    def action(self, action):
         if getattr(action, 'kick'):
             self.serial.write(b'K')
 
