@@ -1,4 +1,5 @@
 from Client.Controllers.BaseController import BaseController
+from Client.Shared.Action import Action
 import math
 
 import numpy as np
@@ -166,7 +167,7 @@ class Motor(BaseController):
             (1. / self.r) * ((self.d3 * vw) - (vx * np.sin(self.b3)) + (vy * np.cos(self.b3))),
             (1. / self.r) * ((self.d4 * vw) - (vx * np.sin(self.b4)) + (vy * np.cos(self.b4)))
         ])
-        print(f"{__name__}.calculate({vw=}, {vx=}, {vy=}) = {uv=}")
+
         uv = np.multiply(uv, 1/2*np.pi)
         print(f"{__name__}.calculate({vw=}, {vx=}, {vy=}) = {uv=}")
         return uv
@@ -220,9 +221,14 @@ class Motor(BaseController):
 
     def listen(self):
         while True:
-            action = self.recv.recv()
+            action = self.pipe[1].recv()
+            if not isinstance(action, Action):
+                raise TypeError(f"unexpected type: expected 'Action', got: {action.__class__}")
             asyncio.run(self.run(action))
 
     @staticmethod
     def add_cls_specific_arguments(parent):
         return parent
+    
+if __name__ == '__main':
+    x = np.linspace(0, 100, 11)
