@@ -1,6 +1,7 @@
 from Client.Controllers.BaseController import BaseController
 import serial
 from serial.tools import list_ports
+from multiprocessing import Value
 
 class Ardunio(BaseController):
     def __init__(self, port, baudrate):
