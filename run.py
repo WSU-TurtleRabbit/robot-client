@@ -1,6 +1,5 @@
 #! /usr/bin/python3
-
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, freeze_support
 from multiprocessing.managers import BaseManager
 
 # from Client.Controllers.Motor import Motor
@@ -13,12 +12,7 @@ import argparse
 class ControllerManager(BaseManager):
     pass
 
-def Manager():
-    m = ControllerManager()
-    m.start()
-    return m
-
-def listen(queue, pipes):
+def listen(queue:Queue, pipes):
     while True:
         if not queue.empty():
             action = queue.get()
@@ -27,51 +21,43 @@ def listen(queue, pipes):
 
 if __name__ == '__main__':
 
+    freeze_support()
+
     parser = argparse.ArgumentParser()
     parser = UDP.add_cls_specific_arguments(parser)
     # parser = Motor.add_cls_specific_arguments(parser)
     parser = Ardunio.add_cls_specific_arguments(parser)
 
     args = parser.parse_args()
-    kwargs = vars(parser)
+    kwargs = vars(args)
 
     queue = Queue()
     communication = UDP()
-    # robot_udp_listener = Process(target=communication.listen_udp, args=(queue,))
-    # robot_udp_listener.start()
-    # robot_broadcast_listener = Process(target=communication.listen_broadcast)
-    # robot_broadcast_listener.start()
+    robot_udp_listener = Process(target=communication.listen_udp, args=(queue,))
+    robot_udp_listener.start()
+    robot_broadcast_listener = Process(target=communication.listen_broadcast)
+    robot_broadcast_listener.start()
     # action = Action(1, 0., 0., 0., 1, 0.)
     # queue.put(action)
 
-    # ControllerManager.register('Motor', Motor)
     ControllerManager.register('Ardunio', Ardunio)
-    manager = Manager()
+    manager = ControllerManager()
+    manager.start()
 
+    ardunio = manager.Ardunio()
     port = Ardunio.detect_ardunio_device()
-    if not kwargs['port'] is None:
+    if kwargs['port']:
         port = kwargs['port']
 
-    baudrate = kwargs['baudrate']
-
-    # motor = manager.Motor()
-    ardunio = manager.Ardunio(port, baudrate)
-
+    ardunio.connect(port, kwargs['baudrate'])
     pipes = [ardunio.pipe()]
 
     consumer = Process(target=listen, args=(queue, pipes,))
     consumer.start()
 
-    # actions = [motor.listen, ardunio.listen]
-    actions = [ardunio.listen]
-    
-    subprocesses = [Process(target=x) for x in actions]
-    for subprocess in subprocesses:
-        subprocess.start()
+    ardunio.listen()
 
-    # robot_udp_listener.join()
-    # robot_broadcast_listener.join()
+
+    robot_udp_listener.join()
+    robot_broadcast_listener.join()
     consumer.join()
-
-    for subprocess in subprocesses:
-        subprocess.join()

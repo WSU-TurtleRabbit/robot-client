@@ -1,17 +1,23 @@
 from Client.Controllers.BaseController import BaseController
 import serial
 from serial.tools import list_ports
-from multiprocessing import Value
 
 class Ardunio(BaseController):
-    def __init__(self, port, baudrate):
+    def __init__(self):
         super().__init__()
+        self.port = None
+        self.baudrate = None
+        self.serial = None
 
+    def connect(self, port, baudrate):
         self.port = port
         self.baudrate = baudrate
         self.serial = serial.Serial(self.port, self.baudrate)
 
     def action(self, action):
+        if self.serial is None:
+            raise UserWarning('connect() has not been called.')
+
         print(action)
         if getattr(action, 'kick'):
             self.serial.write(b'K')
