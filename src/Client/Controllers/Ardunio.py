@@ -10,15 +10,17 @@ class Ardunio(BaseController):
         self.serial = None
 
     def connect(self, port, baudrate):
-        self.port = port
-        self.baudrate = baudrate
-        self.serial = serial.Serial(self.port, self.baudrate)
+        self.port = port # ardunio's serial port (COM for windows, ttyl... for linux, cu.usbmodem... for MacOS)
+        self.baudrate = baudrate # baud rate for serial communications
+        self.serial = serial.Serial(self.port, self.baudrate) # open up a serial port to communicate with the ardunio
 
     def action(self, action):
+        # check if a serial port is setup for communication
         if self.serial is None:
             raise UserWarning('connect() has not been called.')
 
         print(action)
+        # check if action.kick is set...
         if getattr(action, 'kick'):
             self.serial.write(b'K')
 
@@ -27,12 +29,15 @@ class Ardunio(BaseController):
     @staticmethod
     def detect_ardunio_device():
         USBVID = [0x2341, 0x2a03]
+        # find all the devices with the specific vendor Ids
         devices = list_ports.comports()
         devices = [x for x in devices if x.vid in USBVID]
 
+        # if no devices are found or more than 1, get confused and return nothing
         if not devices or len(devices) > 1:
             return None
         
+        # return the port to the ardunio
         return devices[0].device
     
     @staticmethod

@@ -6,17 +6,23 @@ class BaseController:
         self.event_action_is_set = Event()
 
     def run(self, action):
+        # check if action is an `Action.Action`
         if not isinstance(action, Action):
             raise TypeError(f"unexpected type: expected 'Action', got: {action.__class__}")
+        # talk to the hardware
         self.action(action)
     
     def action(self, action):
         raise NotImplementedError
     
-    def listen(self, namespace, event_action_is_set):        
+    def listen(self, namespace, event_action_is_set):
         while True:
+            # wait for mutliprocessing.Event `event_action_is_set`
+            # to be set by another process 
             if event_action_is_set.is_set():
+                # get Action `action` from shared namespace
                 action = namespace.action
+                # stop blocking process that set `event_action_is_set`
                 event_action_is_set.clear()
                 self.run(action)
 
