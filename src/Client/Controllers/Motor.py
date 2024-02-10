@@ -219,12 +219,20 @@ class Motor(BaseController):
 
         print(f"{self.r=}")
 
-    def listen(self):
+    def listen_(self):
+        raise DeprecationWarning, "listen_() is deprecated, use listen()"
         while True:
             action = self.recv[0].recv()
             if not isinstance(action, Action):
                 raise TypeError(f"unexpected type: expected 'Action', got: {action.__class__}")
             asyncio.run(self.run(action))
+
+    def listen(self, namespace, event_action_is_set):        
+        while True:
+            if event_action_is_set.is_set():
+                action = namespace.action
+                event_action_is_set.clear()
+                asyncio.run(self.run(action))
     
     async def run(self, action):
         if not isinstance(action, Action):

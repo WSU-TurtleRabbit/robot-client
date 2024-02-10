@@ -1,6 +1,5 @@
 #! /usr/bin/python3
-from multiprocessing import Process, Queue, freeze_support
-from multiprocessing.managers import BaseManager
+from multiprocessing import Process, Queue, freeze_support, Manager
 
 # from Client.Controllers.Motor import Motor
 from Client.Controllers.Ardunio import Ardunio
@@ -9,16 +8,13 @@ from Client.Receivers.UDP import UDP
 
 import argparse
 
-class ControllerManager(BaseManager):
-    pass
-
-def listen(queue:Queue, pipes):
+def distribution(queue:Queue, namespace, events):
     while True:
         if not queue.empty():
             action = queue.get()
-            for pipe in pipes:
-                pipe.send(action)
-
+            namespace.action = action
+            for event in events:
+                event.set(timeout=1)
 if __name__ == '__main__':
 
     freeze_support()
@@ -33,31 +29,36 @@ if __name__ == '__main__':
 
     queue = Queue()
     communication = UDP()
-    robot_udp_listener = Process(target=communication.listen_udp, args=(queue,))
-    robot_udp_listener.start()
-    robot_broadcast_listener = Process(target=communication.listen_broadcast)
-    robot_broadcast_listener.start()
+    primary = Process(target=communication.listen_udp, args=(queue,))
+    primary.start()
+    # robot_broadcast_listener = Process(target=communication.listen_broadcast)
+    # robot_broadcast_listener.start()
     # action = Action(1, 0., 0., 0., 1, 0.)
     # queue.put(action)
 
-    ControllerManager.register('Ardunio', Ardunio)
-    manager = ControllerManager()
-    manager.start()
+    manager = Manager()
+    namespace = manager.Namespace()
 
-    ardunio = manager.Ardunio()
+    ardunio = Ardunio()
     port = Ardunio.detect_ardunio_device()
     if kwargs['port']:
         port = kwargs['port']
 
     ardunio.connect(port, kwargs['baudrate'])
-    pipes = [ardunio.pipe()]
 
-    consumer = Process(target=listen, args=(queue, pipes,))
-    consumer.start()
+    controllers = [ardunio]
 
-    ardunio.listen()
+    events = [x.get_event() for x in controllers]
 
+    distribution = Process(target=distribution, args=(queue, namespace, events))
+    distribution.start()
 
-    robot_udp_listener.join()
-    robot_broadcast_listener.join()
-    consumer.join()
+    listeners = [Process(target=x.listen, args=(namespace, events)) for x in controllers]
+    for listener in listeners:
+        listener.start()
+   
+    for listener in listeners:
+        listener.join()
+
+    primary.join()
+    distribution.join()
