@@ -67,6 +67,11 @@ class Motor(BaseController):
 
         print(f"self.calculate({vx}, {vy}, {vw})")
 
+        # if vx, vy and vw are all 0s, stop the motors
+        if vx == 0. and vy == 0. and vw == 0.:
+            await self.transport.cycle(x.make_stop() for x in self.servos.values())
+            return
+
         cmd = [
             self.servos[id+1].make_position(
                 position=math.nan,
