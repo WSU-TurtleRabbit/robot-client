@@ -1,19 +1,16 @@
-#! /usr/bin/env python3 -B
 
 class Action:
-    def __init__(self, id: int, vx: float, vy: float, vw: float, kick: int, dribble: float):
+    def __init__(self, id:int, vx: float, vy: float, vw: float, kick: int, dribble: float):
         """_summary_
             Object for initialise action commands, encode / decode strings for UDP transportation.
         Args:
-            id (int): client to control
+            id (int) : wanted Robot ID
             vx (float): wanted velocity for x direction
             vy (float): wanted velocity for y direction
-            vw (float): wanted angular velocity (radians)
-            kick (bool): wanted kicker to kick (1=True,0=False)
+            omega (float): wanted angular velocity (radians)
+            kick (int): wanted kicker to kick (0/1)
             dribble (float): dribbling speed ? 
         """
-        self.version = '0.0.1'
-
         self.id = id
         self.vx = vx
         self.vy = vy
@@ -28,6 +25,7 @@ class Action:
             message(string): string for send message to send
         """
         self.msg = f"{self.id} {self.vx} {self.vy} {self.vw} {self.kick} {self.dribble}"
+        self.msg = bytes(self.msg.encode('utf-8'))
         return self.msg
 
     @staticmethod
@@ -40,10 +38,12 @@ class Action:
         Returns:
             Action (Object): new Action object Model for easier attribute access
         """
-        id, vx, vy, vw, kick, dribble = msg.split(" ")
-        print(msg)
-        args = [int(id), float(vx), float(vy), float(vw), int(kick), float(dribble)]
+        id, vx, vy, omega, kick, dribble = msg.decode().split(" ")
+        args = list(int(id), float(vx),float(vy),float(vw),int(kick),float(dribble))
         return Action(*args)
-
-    def __repr__(self): #debug msg
-        return f"Action: (id: {self.id}) (vx: {self.vx}, vy: {self.vy}, theta: {self.vw}, kick: {self.kick}, dribble: {self.dribble})"
+        
+    
+    
+    def __repr__(self): 
+        return f"Action: (id: {self.id} vx: {self.vx}, vy: {self.vy}, theta: {self.vw}, kick: {self.kick}, dribble: {self.dribble})"
+    
