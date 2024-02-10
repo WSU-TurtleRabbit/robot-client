@@ -38,11 +38,9 @@ class Action:
         Returns:
             Action (Object): new Action object Model for easier attribute access
         """
-        id, vx, vy, omega, kick, dribble = msg.decode().split(" ")
-        args = list(int(id), float(vx),float(vy),float(vw),int(kick),float(dribble))
+        id, vx, vy, vw, kick, dribble = msg.decode().split(" ")
+        args = [int(id), float(vx),float(vy),float(vw),int(kick),float(dribble)]
         return Action(*args)
-        
-    
     
     def __repr__(self): 
         return f"Action: (id: {self.id} vx: {self.vx}, vy: {self.vy}, theta: {self.vw}, kick: {self.kick}, dribble: {self.dribble})"
