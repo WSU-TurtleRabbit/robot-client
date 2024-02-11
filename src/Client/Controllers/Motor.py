@@ -225,7 +225,7 @@ class Motor(BaseController):
         print(f"{self.r=}")
 
     def listen_(self):
-        raise DeprecationWarning, "listen_() is deprecated, use listen()"
+        raise DeprecationWarning("listen_() is deprecated, use listen()")
         while True:
             action = self.recv[0].recv()
             if not isinstance(action, Action):

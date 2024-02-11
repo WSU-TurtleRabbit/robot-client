@@ -18,10 +18,10 @@ class Ardunio(BaseController):
         # check if a serial port is setup for communication
         if self.serial is None:
             raise UserWarning('connect() has not been called.')
-
-        print(action)
+        
         # check if action.kick is set...
         if getattr(action, 'kick'):
+            print('Kicking...')
             self.serial.write(b'K')
 
         dribble = getattr(action, 'dribble')
@@ -44,5 +44,5 @@ class Ardunio(BaseController):
     def add_cls_specific_arguments(parent):
         parser = parent.add_argument_group('ardunio')
         parser.add_argument('--port', type=str, default=None)
-        parser.add_argument('--baudrate', type=int, default=12900)
+        parser.add_argument('--baudrate', type=int, default=19200)
         return parent

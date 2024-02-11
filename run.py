@@ -12,7 +12,7 @@ import socket
 
 class DummyUDPListener:
     def __init__(self):
-        self.host = '127.0.0.1'
+        self.host = ''
         self.port = 50514
         self.socket = None
 
@@ -24,7 +24,7 @@ class DummyUDPListener:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.host, self.port))
 
-    def recv(self):
+    def recv(self, queue):
         if self.socket is None:
             raise UserWarning('connect() needs to be called before recv()')
         
@@ -32,7 +32,6 @@ class DummyUDPListener:
             message, _ = self.socket.recvfrom(1024)
             action = Action.decode(message)
             queue.put(action)
-            print(action)
 
 def distribution(queue:Queue, namespace, events):
     while True:
@@ -45,7 +44,7 @@ def distribution(queue:Queue, namespace, events):
             # set all events and wait...
             # timeout after 1 second if subprocesses freezes
             for event in events:
-                event.set(timeout=1)
+                event.set()
 
 if __name__ == '__main__':
 
@@ -93,7 +92,7 @@ if __name__ == '__main__':
     distribution.start()
 
     # start subprocesses thats wait for the controller's events to be set...
-    listeners = [Process(target=x.listen, args=(namespace, events)) for x in controllers]
+    listeners = [Process(target=x.listen, args=(namespace,)) for x in controllers]
     for listener in listeners:
         listener.start()
    

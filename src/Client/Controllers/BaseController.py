@@ -15,15 +15,15 @@ class BaseController:
     def action(self, action):
         raise NotImplementedError
     
-    def listen(self, namespace, event_action_is_set):
+    def listen(self, namespace):
         while True:
             # wait for mutliprocessing.Event `event_action_is_set`
             # to be set by another process 
-            if event_action_is_set.is_set():
+            if self.event_action_is_set.is_set():
                 # get Action `action` from shared namespace
                 action = namespace.action
                 # stop blocking process that set `event_action_is_set`
-                event_action_is_set.clear()
+                self.event_action_is_set.clear()
                 self.run(action)
 
     def pipe_(self):

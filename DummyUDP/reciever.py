@@ -1,4 +1,4 @@
-#! /usr/bin/env python3 -B
+#! /usr/bin/env -S python3 -B
 
 import socket
 from Client.Shared.Action import Action
@@ -6,7 +6,7 @@ from multiprocessing import Queue
 
 class DummyUDPListener:
     def __init__(self):
-        self.host = '127.0.0.1'
+        self.host = ''
         self.port = 50514
         self.socket = None
 
