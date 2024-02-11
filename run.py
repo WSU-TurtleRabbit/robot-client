@@ -24,7 +24,7 @@ class DummyUDPListener:
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.host, self.port))
 
-    def recv(self):
+    def recv(self, queue):
         if self.socket is None:
             raise UserWarning('connect() needs to be called before recv()')
         
