@@ -10,6 +10,30 @@ import argparse
 
 import socket
 
+class DummyUDPListener:
+    def __init__(self):
+        self.host = '127.0.0.1'
+        self.port = 50514
+        self.socket = None
+
+    def __call__(self, queue):
+        self.connect()
+        self.recv(queue)
+
+    def connect(self):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.socket.bind((self.host, self.port))
+
+    def recv(self):
+        if self.socket is None:
+            raise UserWarning('connect() needs to be called before recv()')
+        
+        while True:
+            message, _ = self.socket.recvfrom(1024)
+            action = Action.decode(message)
+            queue.put(action)
+            print(action)
+
 def distribution(queue:Queue, namespace, events):
     while True:
         # check if queue has an action
@@ -37,8 +61,9 @@ if __name__ == '__main__':
 
     # shared mutliprocessing.Queue for UDP listerner to communicate with distribution()
     queue = Queue()
-    communication = UDP()
-    primary = Process(target=communication.listen_udp, args=(queue,))
+    # communication = UDP()
+    communication = DummyUDPListener()
+    primary = Process(target=communication, args=(queue,))
     # start a subprocess for the UDP
     primary.start()
     # secondary = Process(target=communication.listen_broadcast)

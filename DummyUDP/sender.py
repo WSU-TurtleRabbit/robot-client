@@ -1,3 +1,5 @@
+#! /usr/bin/env python3 -B
+
 import socket
 import time
 from Client.Shared.Action import Action
@@ -24,8 +26,8 @@ class DummyUDPSender:
     @staticmethod
     def add_cls_specific_arguments(parent):
         parser = parent.add_argument_group('sender')
-        parser.add_argument('ip', str, default='127.0.0.1')
-        parent.add_argument('port', int, default=50514)
+        parser.add_argument('--ip', type=str, default='127.0.0.1')
+        parent.add_argument('--port', type=int, default=50514)
         return parent
 
 if __name__ == '__main__':
