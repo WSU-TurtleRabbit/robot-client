@@ -11,7 +11,7 @@ void loop() {
   if(Serial.available() > 0) { 
     data = Serial.read();
     if(data == 'K') { // if the data recv'ed is 'K' (note: this is case sensitive)
-      pulsePin(outputPin, 200000); 
+      pulsePin(outputPin, 20); 
     }
     //TODO add dribble controls
   }
@@ -25,7 +25,8 @@ void pulsePin(int outputPin, int pulseTime){
   * outputPin (int): pin to send the pulse to
   * pulseTime (int): length of pulse in microseconds
   */
+  uint32_t currentTime = millis(); 
   digitalWrite(outputPin, HIGH);
-  delayMicroseconds(pulseTime); //TODO use non-blocking delay
+  while(millis() < (currentTime + pulseTime));
   digitalWrite(outputPin,LOW);
 }
