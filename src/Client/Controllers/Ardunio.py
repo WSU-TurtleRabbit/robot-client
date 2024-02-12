@@ -1,6 +1,9 @@
 from Client.Controllers.BaseController import BaseController
+
 import serial
 from serial.tools import list_ports
+
+import pyduinocli
 
 class Ardunio(BaseController):
     def __init__(self):
@@ -27,7 +30,7 @@ class Ardunio(BaseController):
         dribble = getattr(action, 'dribble')
 
     @staticmethod
-    def detect_ardunio_device():
+    def detect_ardunio_device_pyserial():
         USBVID = [0x2341, 0x2a03]
         # find all the devices with the specific vendor Ids
         devices = list_ports.comports()
@@ -35,11 +38,41 @@ class Ardunio(BaseController):
 
         # if no devices are found or more than 1, get confused and return nothing
         if not devices or len(devices) > 1:
-            return None
+            raise UserWarning(f'found {len(devices)} compatible devices; need 1')
         
         # return the port to the ardunio
         return devices[0].device
     
+    @staticmethod
+    def detect_ardunio_device_arduino_cli():
+        arduino = pyduinocli.Arduino('arduino-cli')
+        # list all serial devices
+        boards = arduino.board.list()
+
+        port = None
+        fqbn = None
+        for result in boards['result']:
+            # check if there are any ardunio devices
+            if 'matching_boards' in result.keys():
+                # get the COM port and FQBN (Fully Qualified Board Name)
+                port = result['port']['address']
+                fqbn = result['matching_boards'][0]['fqbn']
+
+        # if we don't have the COM port or FQBN, stop
+        if port is None or fqbn is None:
+            raise UserWarning('`arduino-cli` found 0 compatible devices')
+        
+        return port, fqbn
+        
+    @staticmethod
+    def update(port, fqbn, sketch='Kicker'):
+        port, fqbn = Ardunio.detect_ardunio_device_arduino_cli()
+        # compile the ardunio project
+        arduino = pyduinocli.Arduino('arduino-cli')
+        arduino.compile(fqbn=fqbn, sketch=sketch)
+        # upload the ardunio project to detected device
+        arduino.upload(fqbn=fqbn, sketch=sketch, port=port)
+
     @staticmethod
     def add_cls_specific_arguments(parent):
         parser = parent.add_argument_group('ardunio')
