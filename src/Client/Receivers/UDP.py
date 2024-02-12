@@ -177,8 +177,6 @@ class UDP():
             Function no longer in use - replaced by "listen_udp" and "listen_broadcast"
         """
         return None
-
-        
     
     def get_id(self):
         return self.id

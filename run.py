@@ -1,5 +1,5 @@
 #! /usr/bin/python3
-from multiprocessing import Process, Queue, freeze_support, Manager
+from multiprocessing import Process, freeze_support, Manager
 
 # from Client.Controllers.Motor import Motor
 from Client.Controllers.Ardunio import Ardunio
@@ -7,7 +7,6 @@ from Client.Receivers.UDP import UDP
 from Client.Shared.Action import Action
 
 import argparse
-
 import socket
 
 class DummyUDPListener:
@@ -15,31 +14,44 @@ class DummyUDPListener:
         self.host = ''
         self.port = 50514
         self.socket = None
+        self.recv = None
 
-    def __call__(self, queue):
+    def __call__(self):
         self.connect()
-        self.recv(queue)
+        self.recv(self.pipe)
 
     def connect(self):
+        # sets up a UDP socket on local machine
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        # bind to sock for listening
         self.socket.bind((self.host, self.port))
 
-    def recv(self, queue):
+    def recieve(self):
+        # check if we are connected
         if self.socket is None:
             raise UserWarning('connect() needs to be called before recv()')
         
+        # listen to socket
         while True:
             message, _ = self.socket.recvfrom(1024)
             action = Action.decode(message)
-            queue.put(action)
+            # send it to another process for distribution to controllers...
+            self.recv.send(action)
+    
+    def pipe(self):
+        from multiprocessing import Pipe
+        self.recv, _ = Pipe()
+        return _
 
-def distribution(queue:Queue, namespace, events):
+def distribution(connection, namespace, events):
     while True:
         # check if queue has an action
-        if not queue.empty():
-            action = queue.get()
+
             # set the shared namespace variable `action`
             # to the recved action
+            action = connection.recv()
+            if not isinstance(action, Action):
+                raise TypeError(f'action is not type: {Action}, got {type(action)}')
             namespace.action = action
             # set all events and wait...
             # timeout after 1 second if subprocesses freezes
@@ -51,6 +63,7 @@ if __name__ == '__main__':
     freeze_support()
 
     parser = argparse.ArgumentParser()
+    # parser.add_argument('--develop', type=bool, default=False)
     parser = UDP.add_cls_specific_arguments(parser)
     # parser = Motor.add_cls_specific_arguments(parser)
     parser = Ardunio.add_cls_specific_arguments(parser)
@@ -59,16 +72,16 @@ if __name__ == '__main__':
     kwargs = vars(args)
 
     # shared mutliprocessing.Queue for UDP listerner to communicate with distribution()
-    queue = Queue()
+    
     # communication = UDP()
     communication = DummyUDPListener()
-    primary = Process(target=communication, args=(queue,))
+    pipe = communication.pipe()
+
+    primary = Process(target=communication, args=(pipe,))
     # start a subprocess for the UDP
     primary.start()
     # secondary = Process(target=communication.listen_broadcast)
     # secondary.start()
-    # action = Action(1, 0., 0., 0., 1, 0.)
-    # queue.put(action)
 
     manager = Manager()
     # setup a shared namespace for every subprocess to use
@@ -88,7 +101,7 @@ if __name__ == '__main__':
     events = [x.get_event() for x in controllers]
 
     # distributes the actions recieved from the UDP listener
-    distribution = Process(target=distribution, args=(queue, namespace, events))
+    distribution = Process(target=distribution, args=(pipe, namespace, events))
     distribution.start()
 
     # start subprocesses thats wait for the controller's events to be set...

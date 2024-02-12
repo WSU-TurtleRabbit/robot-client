@@ -14,7 +14,7 @@ class DummyUDPSender:
     def connect(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-    def send_msg(self):
+    def send(self):
         if self.socket is None:
             raise UserWarning('connect() needs to be called before send_msg()')
         
@@ -30,6 +30,7 @@ class DummyUDPSender:
         parent.add_argument('--port', type=int, default=50514)
         return parent
 
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser = DummyUDPSender.add_cls_specific_arguments(parser)
@@ -38,4 +39,4 @@ if __name__ == '__main__':
 
     sender = DummyUDPSender(kwargs['ip'], kwargs['port'])
     sender.connect()
-    sender.send_msg()
+    sender.send()

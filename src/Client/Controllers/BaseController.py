@@ -4,6 +4,7 @@ from multiprocessing import Event
 class BaseController:
     def __init__(self):
         self.event_action_is_set = Event()
+        self.recv = None
 
     def run(self, action):
         # check if action is an `Action.Action`
@@ -13,7 +14,7 @@ class BaseController:
         self.action(action)
     
     def action(self, action):
-        raise NotImplementedError
+        raise NotImplementedError()
     
     def listen(self, namespace):
         while True:
@@ -26,13 +27,13 @@ class BaseController:
                 self.event_action_is_set.clear()
                 self.run(action)
 
-    def pipe_(self):
-        raise DeprecationWarning("pipe_() no longer in use.")
+    def pipe(self):
         from multiprocessing import Pipe
         self.recv = Pipe(duplex=False)
         return self.recv[1]
     
     def get_event(self):
+        raise DeprecationWarning("get_event() no longer in use.")
         return self.event_action_is_set
         
     @staticmethod
