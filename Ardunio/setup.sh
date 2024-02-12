@@ -13,4 +13,4 @@ arduino-cli core install arduino:avr
 
 sudo usermod -a -G dialout $USER
 
-pip3 install pyserial
+pip3 install pyduinocli

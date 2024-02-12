@@ -20,3 +20,9 @@ To start the client on the robot, use the following commands:
 chmod u+x run.py
 sudo ./run.py
 ```
+
+To update the ardunio:
+```bash 
+chmod u+x Arduino/update.py
+./Arduino/update.py
+```
