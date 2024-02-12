@@ -93,53 +93,6 @@ class Motor(BaseController):
         #stops after the timer has ran out
         await self.transport.cycle(x.make_stop() for x in self.servos.values())
 
-    def calculate_(self, vw, vx, vy):
-        raise DeprecationWarning(f"{__name__} has been deprecated. use calculate()")
-        """_summary_
-            calculates omniwheels' velocities using args: vx, vy and omega
-            applying the omniwheel equation from:
-            
-            "Modern Robotics: Mechanics, Planning & Control"
-            13.2.1
-
-        Args:
-            omega (float): angle velocity (rad/s)
-            vx (float): velocity in x direction (cm/s)
-            vy (float): velocity in y direction (cm/s)
-
-        Params: 
-            vb (matrix (1,3)): compiles the 3 velocity into an array
-            H (matrix(4,3)): applies the Omniwheel veloicty matrix
-            H.T: transpose H matrix into (3,4)
-
-        Returns:
-            w (array): returns all calculated wheel velocity
-        """
-        vb = np.array([vw, vx, vy])
-        vb = np.expand_dims(vb, axis=1)
-        H = np.array([[-self.d1, -self.d2, -self.d3, -self.d4],
-            [np.cos(self.b1), np.cos(self.b2), -np.cos(self.b3), -np.cos(self.b4)],
-            [np.sin(self.b1), -np.sin(self.b2), -np.sin(self.b3), np.sin(self.b4)],
-        ])
-
-        w = (H.T@vb)/self.r
-        return w
-    
-
-    def calculate_(self, vw, vx, vy):
-        raise DeprecationWarning(f"{__name__} has been deprecated, use calculate()")
-        self.set_r(self.r/1000)
-        uv =  np.array([
-            (1. / self.r) * ((np.cos(self.b1)*(-0.036875 * vw + vx)+np.sin(self.b1) * (0.063869* vw + vy))),
-            (1. / self.r) * ((np.cos(self.b2)*(0.052149 * vw + vx)+np.sin(self.b2) * (0.052149* vw + vy))),
-            (1. / self.r) * ((np.cos(self.b3)*(0.052149 * vw + vx)+np.sin(self.b3) * (0.052149* vw + vy))),
-            (1. / self.r) * ((np.cos(self.b4)*(-0.036875 * vw + vx)+np.sin(self.b4) * (-0.063869* vw + vy)))
-        ])
-
-        # uv = np.array([x/(2*math.pi) for x in uv])
-        print(f"{uv=}")
-        return uv
-
     def calculate(self, vw, vx, vy):
         """_summary_
             calculates omniwheels' velocities using args: vx, vy and omega
@@ -223,14 +176,6 @@ class Motor(BaseController):
         self.r = r/self.u
 
         print(f"{self.r=}")
-
-    def listen_(self):
-        raise DeprecationWarning("listen_() is deprecated, use listen()")
-        while True:
-            action = self.recv[0].recv()
-            if not isinstance(action, Action):
-                raise TypeError(f"unexpected type: expected 'Action', got: {action.__class__}")
-            asyncio.run(self.run(action))
 
     def listen(self, namespace, event_action_is_set):        
         while True:
