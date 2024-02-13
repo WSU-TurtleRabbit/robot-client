@@ -19,9 +19,10 @@ class DummyUDPSender:
             raise UserWarning('connect() needs to be called before send_msg()')
         
         while True:
-            msg = Action(id=1, vx=0., vy=0., vw=0., kick=1, dribble=0.).encode()
+            msg = Action(id=1, vx=10., vy=0., vw=0., kick=1, dribble=0.).encode()
+            print('Sending Kick...')
             self.socket.sendto(msg, (self.ip_addr, self.port))
-            time.sleep(1.)
+            time.sleep(10.)
 
     @staticmethod
     def add_cls_specific_arguments(parent):

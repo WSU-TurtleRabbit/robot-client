@@ -1,7 +1,6 @@
 #! /usr/bin/python3
 from multiprocessing import Process, freeze_support, Manager
-
-# from Client.Controllers.Motor import Motor
+from Client.Controllers.Motor import Motor
 from Client.Controllers.Ardunio import Ardunio
 from Client.Receivers.UDP import UDP
 from Client.Shared.Action import Action
@@ -18,7 +17,7 @@ class DummyUDPListener:
 
     def __call__(self):
         self.connect()
-        self.recv(self.pipe)
+        self.recieve()
 
     def connect(self):
         # sets up a UDP socket on local machine
@@ -45,18 +44,18 @@ class DummyUDPListener:
 
 def distribution(connection, namespace, events):
     while True:
-        # check if queue has an action
-
-            # set the shared namespace variable `action`
-            # to the recved action
-            action = connection.recv()
-            if not isinstance(action, Action):
-                raise TypeError(f'action is not type: {Action}, got {type(action)}')
-            namespace.action = action
-            # set all events and wait...
-            # timeout after 1 second if subprocesses freezes
-            for event in events:
-                event.set()
+            if connection.poll():
+                # set the shared namespace variable `action`
+                # to the recved action
+                action = connection.recv()
+                if not isinstance(action, Action):
+                    raise TypeError(f'action is not type: {Action}, got {type(action)}')
+                namespace.action = action
+                print(action)
+                # set all events and wait...
+                # timeout after 1 second if subprocesses freezes
+                for event in events:
+                    event.set()
 
 if __name__ == '__main__':
 
@@ -77,7 +76,7 @@ if __name__ == '__main__':
     communication = DummyUDPListener()
     pipe = communication.pipe()
 
-    primary = Process(target=communication, args=(pipe,))
+    primary = Process(target=communication)
     # start a subprocess for the UDP
     primary.start()
     # secondary = Process(target=communication.listen_broadcast)
@@ -95,7 +94,9 @@ if __name__ == '__main__':
     # connect to the port provided at provided baud rate
     ardunio.connect(port, kwargs['baudrate'])
 
-    controllers = [ardunio]
+    motor = Motor()
+    
+    controllers = [ardunio, motor]
 
     # get each controller's events
     events = [x.get_event() for x in controllers]
@@ -116,5 +117,5 @@ if __name__ == '__main__':
     # wait for the UDP listener to finish
     primary.join()
 
-    # wait for the action distribution to finishs
+    # wait for the action distribution to finish
     distribution.join()

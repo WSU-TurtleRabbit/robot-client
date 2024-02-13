@@ -3,8 +3,6 @@ from Client.Controllers.BaseController import BaseController
 import serial
 from serial.tools import list_ports
 
-import pyduinocli
-
 class Ardunio(BaseController):
     def __init__(self):
         super().__init__()
@@ -30,7 +28,7 @@ class Ardunio(BaseController):
         dribble = getattr(action, 'dribble')
 
     @staticmethod
-    def detect_ardunio_device_pyserial():
+    def detect_ardunio_device():
         USBVID = [0x2341, 0x2a03]
         # find all the devices with the specific vendor Ids
         devices = list_ports.comports()
@@ -42,9 +40,10 @@ class Ardunio(BaseController):
         
         # return the port to the ardunio
         return devices[0].device
-    
+        
     @staticmethod
-    def detect_ardunio_device_arduino_cli():
+    def update(sketch='Kicker'):
+        import pyduinocli
         arduino = pyduinocli.Arduino('arduino-cli')
         # list all serial devices
         boards = arduino.board.list()
@@ -61,12 +60,6 @@ class Ardunio(BaseController):
         # if we don't have the COM port or FQBN, stop
         if port is None or fqbn is None:
             raise UserWarning('`arduino-cli` found 0 compatible devices')
-        
-        return port, fqbn
-        
-    @staticmethod
-    def update(port, fqbn, sketch='Kicker'):
-        port, fqbn = Ardunio.detect_ardunio_device_arduino_cli()
         # compile the ardunio project
         arduino = pyduinocli.Arduino('arduino-cli')
         arduino.compile(fqbn=fqbn, sketch=sketch)

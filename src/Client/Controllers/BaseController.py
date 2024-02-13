@@ -28,12 +28,12 @@ class BaseController:
                 self.run(action)
 
     def pipe(self):
+        raise DeprecationWarning("pipe() no longer in use.")
         from multiprocessing import Pipe
         self.recv = Pipe(duplex=False)
         return self.recv[1]
     
     def get_event(self):
-        raise DeprecationWarning("get_event() no longer in use.")
         return self.event_action_is_set
         
     @staticmethod

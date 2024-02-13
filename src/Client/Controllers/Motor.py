@@ -68,9 +68,9 @@ class Motor(BaseController):
         print(f"self.calculate({vx}, {vy}, {vw})")
 
         # if vx, vy and vw are all 0s, stop the motors
-        if vx == 0. and vy == 0. and vw == 0.:
-            await self.transport.cycle(x.make_stop() for x in self.servos.values())
-            return
+        # if vx == 0. and vy == 0. and vw == 0.:
+        #     await self.transport.cycle(x.make_stop() for x in self.servos.values())
+        #     return
 
         cmd = [
             self.servos[id+1].make_position(
@@ -82,7 +82,7 @@ class Motor(BaseController):
         ]
 
         #initialise timer with : 5
-        end = time.time() + 5
+        end = time.time() + 1
         # while the time is still in range
         while time.time() < end :
             # loop velocity
@@ -177,11 +177,11 @@ class Motor(BaseController):
 
         print(f"{self.r=}")
 
-    def listen(self, namespace, event_action_is_set):        
+    def listen(self, namespace):        
         while True:
-            if event_action_is_set.is_set():
+            if self.event_action_is_set.is_set():
                 action = namespace.action
-                event_action_is_set.clear()
+                self.event_action_is_set.clear()
                 asyncio.run(self.run(action))
     
     async def run(self, action):
