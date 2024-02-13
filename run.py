@@ -88,7 +88,7 @@ if __name__ == '__main__':
     namespace = manager.Namespace()
 
     ardunio = Ardunio()
-    port = Ardunio.detect_ardunio_device()
+    port = Ardunio.detect_ardunio_device_pyserial()
     if kwargs['port']:
         port = kwargs['port']
     

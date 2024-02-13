@@ -16,12 +16,12 @@ void loop() {
   char inByte;
   uint32_t currentTime = millis();
   pinStatus = checkPulsePin(pinStatus, outputPin, previousTime, currentTime, pulseTime);
+  static char message[MAX_MESSAGE_LEN];
+  static unsigned int position = 0;
   while(Serial.available() > 0) { // check if there is something in the serial recv buffer to read
-    static char message[MAX_MESSAGE_LEN];
-    static unsigned int position = 0;
     inByte = Serial.read(); // Serial.read() reads 1 byte at a time
     if(inByte == '\n') { // check if the entire message has been recved
-      message[position] = '\0' // add a EOF character
+      message[position] = '\0'; // add a EOF character
       break;
     }
     // keep filling message buffer if not
