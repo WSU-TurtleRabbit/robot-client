@@ -24,8 +24,8 @@ class Motor(BaseController):
 
         super().__init__()
 
-        self.timeout = .5
-        self.u = 1.
+        self.interval = 500 # ms
+        self.u = 1. # 'mm' * self.u
     
         self.servo_bus_map = { 
                     1: [1],
@@ -68,9 +68,9 @@ class Motor(BaseController):
         print(f"self.calculate({vx}, {vy}, {vw})")
 
         # if vx, vy and vw are all 0s, stop the motors
-        # if vx == 0. and vy == 0. and vw == 0.:
-        #     await self.transport.cycle(x.make_stop() for x in self.servos.values())
-        #     return
+        if vx == 0. and vy == 0. and vw == 0.:
+            await self.transport.cycle(x.make_stop() for x in self.servos.values())
+            return
 
         cmd = [
             self.servos[id+1].make_position(
@@ -81,10 +81,8 @@ class Motor(BaseController):
             ## *This is a backwards for loop*
         ]
 
-        #initialise timer with : 5
-        end = time.time() + 1
-        # while the time is still in range
-        while time.time() < end :
+        ts = time.ticks_us()
+        while time.ticks_diff(time.ticks_us(), ts) > (self.interval * 1e3):
             # loop velocity
             await self.transport.cycle(cmd)
             # print debug results
