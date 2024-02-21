@@ -35,13 +35,22 @@ def redirect_print_to_log():
         return inner
     return outer
 
-def runtime():
-    def outer(func: callable):
+def runtime(func):
         @functools.wraps
-        def inner(*args, **kwargs):
+        def wrapper(*args, **kwargs):
             # record the start time
-            func(*args, **kwargs)
+            ts = time()
+            result = func(*args, **kwargs)
             # record the end time
+            te = time
             # calculate the runtime of the func
-        return
-    return outer 
+            print(f"func: {func.__name__} args: [{args, kwargs} took: {te-ts}]")
+            return result
+        return wrapper
+
+def time_cls_methods(cls):
+    for name, value in vars(cls).items():
+          if callable(value):
+               print(f"{cls} {name} {value}")
+               setattr(cls, name, runtime(value))
+    return cls
