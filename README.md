@@ -22,10 +22,10 @@ chmod 600 ~/.ssh/config
 cat ~/.ssh/id_github.pub # deploy key will be displayed in terminal.
 
 # now clone the github repositories
-git clone git@github.com-robot-client:WSU-TurtleRabbit/robot-client-2.git 
+git clone git@github.com-robot-client:WSU-TurtleRabbit/robot-client.git 
 cd robot-client
 ```
-or to initiate the module and environment on a raspberry pi, use the following commands:
+or to initiate the require modules and environment on a raspberry pi, use the following commands:
 ```bash
 chmod u+x rp4setup.sh
 sudo ./rp4setup.sh
