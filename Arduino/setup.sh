@@ -13,6 +13,6 @@ arduino-cli config init
 arduino-cli core update-index
 arduino-cli core install arduino:avr
 
-sudo usermod -a -G dialout $USER
+sudo usermod -a -G dialout $USER #gives user access to serial ports 
 
 pip3 install pyduinocli
