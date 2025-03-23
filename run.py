@@ -1,13 +1,14 @@
 #! /usr/bin/python3
 from multiprocessing import Process, freeze_support, Manager, Queue
 
-from Client.Receivers.Dummy import DummyReciever
-from Client.Shared.Action import Action
+from Client.Dummy.DummyReceiver import DummyReciever
+from Client.Coms.Action import Action
 from Client.Controllers.Motor2 import MotorController, MotorController2Factory
 from Client.Controllers.Arduino import ArduinoController, ArduinoControllerFactory
 from Client import SharedResource, SharedResourceProxy
+from Client.Dummy.DummyMotor import MotorDummy
 
-from Client.Shared.RobotUDP import *
+from Client.Receivers.RobotUDP import *
 import multiprocessing 
 from multiprocessing.managers import BaseManager
 
@@ -109,13 +110,20 @@ if __name__ == '__main__':
     processes = [] #list of processes
 
     # check if the argument --disable-motor-controller is set, if set -> disable motors
-    if not getattr(args, "disable_motor_controller"):
+    if getattr(args,"disable_motor_controller"):
+        log.debug('arg "disable_motor_controller" is true')
+        events.append(controller_specific_events['tc_action_recv_event'])
+        motor = Process(target=MotorDummy(), args=(f, controller_specific_events ,args), name="Motor Dummy")
+        processes.append(motor)
+
+    elif not getattr(args, "disable_motor_controller"):
         log.debug('arg "disable_motor_controller" is false')
         controller_specific_events['tc_action_recv_event'] = multiprocessing.Event() 
         events.append(controller_specific_events['tc_action_recv_event'])
         # initalise motor controller
         motor = Process(target=MotorController2Factory(), args=(f, controller_specific_events ,args), name="Motor Controller")
         processes.append(motor)
+
 
     # check if the argument --disable-arduino-controller is set, if set -> disable arduino
     if not getattr(args, "disable_arduino_controller"):

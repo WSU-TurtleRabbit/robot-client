@@ -1,5 +1,5 @@
 '''abstract controller class'''
-from Client.Shared.Action import Action
+from Client.Coms.Action import Action
 from multiprocessing import Event
 import argparse
 import logging

@@ -1,6 +1,6 @@
 '''controller for moteus motor controllers'''
 from Client.Controllers.BaseController import BaseController
-from Client.Shared.Action import Action
+from Client.Coms.Action import Action
 import math
 
 import numpy as np

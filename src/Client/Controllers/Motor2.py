@@ -1,6 +1,6 @@
 '''re-implmentation of Motor.py for real-time response'''
 from Client.Controllers.Motor import MotorController
-from Client.Shared.Action import Action
+from Client.Coms.Action import Action
 import math
 import time
 import asyncio

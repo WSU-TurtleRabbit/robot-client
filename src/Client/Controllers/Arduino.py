@@ -1,6 +1,6 @@
 '''controller for arduino (to control kicker and dribbler)'''
 from Client.Controllers.BaseController import BaseController
-from Client.Shared.Action import Action
+from Client.Coms.Action import Action
 
 import serial
 from serial.tools import list_ports
