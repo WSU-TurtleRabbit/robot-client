@@ -1,5 +1,5 @@
 import socket
-from Client.Shared.Action import Action
+from Client.Coms.Action import Action
 import argparse
 import time
 import logging
