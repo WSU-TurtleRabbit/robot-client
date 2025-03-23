@@ -55,7 +55,11 @@ class MotorDummy(BaseController):
 
         self._interval: float = 1 # ms
         self._u: float = 1. # motor movement is in 'mm' can be scaled by changing self.u
-    
+        self.vx: float = 0.
+        self.vy: float = 0.
+        self.vw: float = 0.
+        self._action_interval = 1
+        self._action_duration = 0
         self.servo_bus_map: dict = { 
                     1: [1],
                     2: [2],
@@ -73,44 +77,7 @@ class MotorDummy(BaseController):
         self.__set_wheel_radius() # sets radius of the wheel
         log.info("motor controller(s) initialised") #END
     
-    def calculate(self, vw: float, vx: float, vy: float) -> np.array:
-        """_summary_
-            calculates omniwheels' velocities using args: vx, vy and omega
-            applying the omniwheel equation from:
-            
-            "Modern Robotics: Mechanics, Planning & Control"
-            13.2.1
-
-        Args:
-            w (float): angle velocity (rad/s)
-            vx (float): velocity in x direction (cm/s)
-            vy (float): velocity in y direction (cm/s)
-
-        Params: 
-            vb (matrix (1,3)): compiles the 3 velocity into an array
-            H (matrix(4,3)): applies the Omniwheel veloicty matrix
-            H.T: transpose H matrix into (3,4)
-
-        Returns:
-            w (array): returns all calculated wheel velocity
-        """
-
-        uv =  np.array([
-            (1. / self.r1) * ((self.d1 * vw) - (vx * np.sin(self.b1)) + (vy * np.cos(self.b1))),
-            (1. / self.r2) * ((self.d2 * vw) - (vx * np.sin(self.b2)) + (vy * np.cos(self.b2))),
-            (1. / self.r3) * ((self.d3 * vw) - (vx * np.sin(self.b3)) + (vy * np.cos(self.b3))),
-            (1. / self.r4) * ((self.d4 * vw) - (vx * np.sin(self.b4)) + (vy * np.cos(self.b4)))
-        ])
-        
-        for v in uv:
-            if v > self.VELOCITY_UPPER_LIMIT:
-                uv = np.array([0., 0., 0., 0.])
-                break
-
-        uv = np.multiply(uv, 1/2*np.pi)
-        log.debug(f"calculate({vw=}, {vx=}, {vy=}) = {uv=}")
-        return uv
-        
+    
     def __set_direction_of_cw_motion(self) -> None:
         """set direction of cw motion (private)
         sets each wheel's inidividual direction of CLOCKWISE Motion
@@ -139,6 +106,52 @@ class MotorDummy(BaseController):
         self.r3 = self.OMNIWHEEL_3_RADIUS/self._u
         self.r4 = self.OMNIWHEEL_4_RADIUS/self._u
 
+    
+    def calculate(self, vx: float, vy: float, vw: float) -> np.array:
+        """_summary_
+            calculates omniwheels' velocities using args: vx, vy and omega
+            applying the omniwheel equation from:
+            
+            "Modern Robotics: Mechanics, Planning & Control"
+            13.2.1
+
+        Args:
+            vx (float): velocity in x direction (cm/s)
+            vy (float): velocity in y direction (cm/s)
+            vw (float): angle velocity (rad/s)
+
+        Params: 
+            vb (matrix (1,3)): compiles the 3 velocity into an array
+            H (matrix(4,3)): applies the Omniwheel veloicty matrix
+            H.T: transpose H matrix into (3,4)
+
+        Returns:
+            w (array): returns all calculated wheel velocity
+        """
+
+        uv =  np.array([
+            (1. / self.r1) * ((self.d1 * vw) - (vx * np.sin(self.b1)) + (vy * np.cos(self.b1))),
+            (1. / self.r2) * ((self.d2 * vw) - (vx * np.sin(self.b2)) + (vy * np.cos(self.b2))),
+            (1. / self.r3) * ((self.d3 * vw) - (vx * np.sin(self.b3)) + (vy * np.cos(self.b3))),
+            (1. / self.r4) * ((self.d4 * vw) - (vx * np.sin(self.b4)) + (vy * np.cos(self.b4)))
+        ])
+        
+        for v in uv:
+            if v > self.VELOCITY_UPPER_LIMIT:
+                uv = np.array([0., 0., 0., 0.])
+                break
+
+        uv = np.multiply(uv, 1/2*np.pi)
+        log.debug(f"calculate({vw=}, {vx=}, {vy=}) = {uv=}")
+        return uv
+        
+    def do(self):
+        v1,v2,v3,v4 = self.calculate(self.vx,self.vy,self.vw)
+        print(f"Wheels are moving at the sepeed of {v1=} {v2=} {v3=} {v4=}")
+        time.sleep(0.5)
+        
+        
+        
     async def run(self) -> None: # NOT IN USE
         await self._make_stop()
         while True:
@@ -156,10 +169,8 @@ class MotorDummy(BaseController):
                             self.vy = 0.
                             self.vw = 0.
                             # if yes, make stop
-                            await self._make_stop()
-                            if time.time() < self._last_action_time + self.action_time:
-                                log.warning("Action : Stop Received")
-
+                            log.warning("Stop Action Received")
+                            await self._make_stop() #stopping all motors
                             
                         elif abs(action.vx)>0 or abs(action.vy) > 0 or abs(action.w) > 0:
                             # reset fault
@@ -170,7 +181,17 @@ class MotorDummy(BaseController):
                             self.vw = action.w
                             log.info(f"new Velocity Received : {self.vx=} {self.vy=} {self.vw=}")
                             # updating last sent action timer
-                            self._last_action_time = action._time
+                            self._action_duration =  action._time +self._action_interval
+                    
+                    # # if received command from Team Control (server) to shut down
+                    # if self._gc_force_shutdown_event.is_set():
+                    #     break
+                    
+                    # # check if the action duration has been expired
+                    # if time.time() >= self._action_duration:
+                    #     log.warning("Action expired, stopping")
+                    #     await self._make_stop()
+                    #     self.vx,self.vy,self.vw = 0.,0.,0.
                             
                     ##if we want to do something special for NONE Action, we use the following   
                     # else: 
@@ -179,11 +200,9 @@ class MotorDummy(BaseController):
                     #     continue #continue => skip this cycle, 
                     #     pass #pass => return to the cycle
                     
-                    if self._gc_force_shutdown_event.is_set():
-                        break
 
                     # if the time now is still within the action time
-                    if time.time() < self._last_action_time + self.action_time:
+                    if time.time() < self._action_duration:
                         # loop the action
                         logging.warning("Action is now active, moving robot")
                         self.do()
