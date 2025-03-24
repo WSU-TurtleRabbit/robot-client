@@ -151,7 +151,7 @@ class DummyMotor(BaseController):
     def do(self):
         v1,v2,v3,v4 = self.calculate(self.vx,self.vy,self.vw)
         print(f"Wheels are moving at the sepeed of {v1=} {v2=} {v3=} {v4=}")
-        time.sleep(0.5)        
+        time.sleep(0.5) #spinning
         
         
     async def run(self) -> None: # NOT IN USE
@@ -201,8 +201,8 @@ class DummyMotor(BaseController):
                     #     self._make_stop()
                     #     continue #continue => skip this cycle, 
                     #     pass #pass => return to the cycle
-                    
-                    print(self._last_action_time+self._action_interval, time.time())
+                
+                    log.debug(f"Action Expired Time : {self._last_action_time+self._action_interval}, time Now : {time.time()}")
 
                     # if the time now is still within the action time
                     if time.time() < self._last_action_time + self._action_interval:
@@ -224,7 +224,7 @@ class DummyMotor(BaseController):
                     sys.exit(1) # General error exit code
                     
             except asyncio.exceptions.CancelledError as ce:
-                print("cancelled error")
+                log.error("cancelled error")
                 sys.exit(130)
                 
             except KeyboardInterrupt:
