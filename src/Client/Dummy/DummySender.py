@@ -38,7 +38,7 @@ class DummyUDPSender:
             msg = Action(robot_id=1, vx=vx, vy=vy, w=0., kick=0, dribble=0).encode()
             print(f'Sending Action... {msg}')
             self.socket.sendto(msg, (self.ip_addr, self.port))
-            time.sleep(0.2) # sleep until the controller has executed the action
+            # time.sleep(0.2) # sleep until the controller has executed the action
 
     @staticmethod
     def add_cls_specific_arguments(parent: argparse.ArgumentParser) -> argparse.ArgumentParser:
