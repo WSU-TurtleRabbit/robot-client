@@ -18,7 +18,7 @@ except ImportError as e:
     log.warning(e)
 
 
-class MotorController2(MotorController):
+class MotorController3(MotorController):
     def do(self, action: Action):
         '''
             do() - implements BaseController do()
@@ -31,7 +31,7 @@ class MotorController2(MotorController):
         #     return
 
         v1, v2, v3, v4 = self.calculate(self.vx, self.vy, self.vw) # convert vx, vy and w into the velocities for each wheel to achieve the desired movement
-        log.debug(f"velocityies {v1=} {v2=} {v3=} {v4=}")
+        log.debug(f"Wheels are moving at the speed of {v1=} {v2=} {v3=} {v4=}")
         ## we can add validation here
         self.query = [
             self.controllers[id+1].make_position(
@@ -40,6 +40,7 @@ class MotorController2(MotorController):
                 query=True
             ) for id, velocity in enumerate([v1, v2, v3, v4]) # send a velocity only command to the moetus controller
         ]
+        
 
     async def run(self) -> None: # NOT IN USE
         await self._make_stop()
@@ -68,7 +69,7 @@ class MotorController2(MotorController):
                             self.vx = action.vx
                             self.vy = action.vy
                             self.vw = action.w
-                            log.info(f"new Velocity Received : {self.vx=} {self.vy=} {self.vw=}")
+                            log.info(f"new Velocity Received : {self.vx=} {self.vy=} {self.vw=}, {self._last_action_time}")
                             # updating last sent action timer
                             self._last_action_time =  action._time 
                     
@@ -89,12 +90,18 @@ class MotorController2(MotorController):
                     #     continue #continue => skip this cycle, 
                     #     pass #pass => return to the cycle
                     
+                    log.debug(f"Action Expired Time : {self._last_action_time+self._action_interval}, time Now : {time.time()}")
 
                     # if the time now is still within the action time
                     if time.time() < self._last_action_time + self._action_interval:
                         # loop the action
                         logging.warning("Action is now active, moving robot")
                         self.do()
+                        results = await self.transport.cycle(self.query) # send the wheel velocities to the motor controllers
+                        for i in range(4): # each motor controller has query=True, check the registers for a fault state
+                            mc_fault_status = results[i].values[moteus.Register.FAULT] 
+                            if not mc_fault_status == 0:
+                                self._make_stop() 
                     else: # if the max action timer has reached, reset.
                         logging.warning("Action Timed Out, ROBOT IDLE.")
                         await self._make_stop()
@@ -110,7 +117,7 @@ class MotorController2(MotorController):
                     sys.exit(1) # General error exit code
                     
             except asyncio.exceptions.CancelledError as ce:
-                print("cancelled error")
+                log.error("cancelled error")
                 sys.exit(130)
                 
             except KeyboardInterrupt:
@@ -125,7 +132,7 @@ class MotorController2(MotorController):
                     os._exit(130)
 
 
-class MotorController2Factory:
+class MotorController3Factory:
     @staticmethod
     def __call__(shared_global_resource, event) -> None:
         '''
@@ -135,7 +142,7 @@ class MotorController2Factory:
             shared_global_resource (TeamControl.SharedGlobalResource) interprocess communication messaging object
             event (list[multiprocessing.Event]): list of mutliprocessing.Event objects to signal the process to do various actions
         '''
-        motor = MotorController2(shared_global_resource)
+        motor = MotorController3(shared_global_resource)
         motor.tc_action_recv_event = event['tc_action_recv_event'] # not in use
         motor.gc_force_shutdown_event = event['gc_force_shutdown_event'] # not in use
         asyncio.run(motor.run()) # motor controller functions are all asynchronous functions
