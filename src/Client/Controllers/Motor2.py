@@ -4,11 +4,17 @@ from Client.Coms.Action import Action
 import math
 import time
 import asyncio
-import moteus
+
 import logging
 
 log = logging.getLogger()
 log.setLevel(logging.NOTSET)
+
+try:
+    import moteus
+except ImportError as e:
+    log.warning(e)
+
 
 class MotorController2(MotorController):
     def do(self, action: Action):
@@ -77,7 +83,7 @@ class MotorController2(MotorController):
 
 class MotorController2Factory:
     @staticmethod
-    def __call__(shared_global_resource, event, args) -> None:
+    def __call__(shared_global_resource, event) -> None:
         '''
             MotorController2Factory()
 

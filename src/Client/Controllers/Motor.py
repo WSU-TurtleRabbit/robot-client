@@ -131,7 +131,7 @@ class MotorController(BaseController):
 
         await self._make_stop()
 
-    def calculate(self, vw: float, vx: float, vy: float) -> np.array:
+    def calculate(self, vx: float, vy: float, vw: float) -> np.array:
         """_summary_
             calculates omniwheels' velocities using args: vx, vy and omega
             applying the omniwheel equation from:
@@ -140,9 +140,9 @@ class MotorController(BaseController):
             13.2.1
 
         Args:
-            w (float): angle velocity (rad/s)
             vx (float): velocity in x direction (cm/s)
             vy (float): velocity in y direction (cm/s)
+            vw (float): angle velocity (rad/s)
 
         Params: 
             vb (matrix (1,3)): compiles the 3 velocity into an array
@@ -150,7 +150,7 @@ class MotorController(BaseController):
             H.T: transpose H matrix into (3,4)
 
         Returns:
-            w (array): returns all calculated wheel velocity
+            uv (array): returns all calculated wheel velocity
         """
 
         uv =  np.array([

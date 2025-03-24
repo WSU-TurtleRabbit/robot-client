@@ -144,7 +144,7 @@ class ArduinoController(BaseController):
     
 class ArduinoControllerFactory():
     @staticmethod
-    def __call__(namespace, event, *args) -> None:
+    def __call__(namespace, event, baudrate) -> None:
         '''
         __call__() constructs an ardunio controller object to listen for action objects
 
@@ -152,7 +152,7 @@ class ArduinoControllerFactory():
             namespace : mulitprocessing shared namespace for inter-process communications
             event (mutliprocessing.Event): mulitprocessing shared event for inter-process messaging
         '''
-        baudrate = getattr(args, 'baud_rate')
+        # baudrate = getattr(args, 'baud_rate')
         port = ArduinoController.detect_ardunio_device()
         log.debug(f'detected ardunio on {port}')
         ardunio = ArduinoController(namespace, port, baudrate)

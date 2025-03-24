@@ -2,11 +2,14 @@
 from multiprocessing import Process, freeze_support, Manager, Queue
 
 from Client.Dummy.DummyReceiver import DummyReciever
+from Client.Dummy.DummyMotor import DummyMotor,DummyMotorControllerFactory
+
 from Client.Coms.Action import Action
+
 from Client.Controllers.Motor2 import MotorController, MotorController2Factory
 from Client.Controllers.Arduino import ArduinoController, ArduinoControllerFactory
+
 from Client import SharedResource, SharedResourceProxy
-from Client.Dummy.DummyMotor import MotorDummy
 
 from Client.Receivers.RobotUDP import *
 import multiprocessing 
@@ -67,9 +70,11 @@ def magic(q: multiprocessing.Queue, shared_global_resource, events: multiprocess
             if reduce(operator.or_, (x.is_set() for x in events)):
                 continue 
 
-            if not isinstance(action, Action):
+            if isinstance(action, Action):
+                shared_global_resource.set_action(action)
+
+            elif not isinstance(action,Action) and action is not None:
                 raise TypeError(f'action is not type: {Action}, got {type(action)}')
-            shared_global_resource.set_action(action)
             # set all events and wait...
             # timeout after 1 second if subprocesses freezes
             # for event in events:
@@ -82,17 +87,20 @@ if __name__ == '__main__':
 
     freeze_support()
 
-    # add arguments to run.py
-    parser = argparse.ArgumentParser()
-    parser = MotorController.add_cls_specific_arguments(parser)
-    parser = ArduinoController.add_cls_specific_arguments(parser)
-    args = parser.parse_args()
-    log.debug(f'{args=}')
+    no_motor = True
+    no_arduino=True
+    # # add arguments to run.py
+    # parser = argparse.ArgumentParser()
+    # parser = MotorController.add_cls_specific_arguments(parser)
+    # parser = ArduinoController.add_cls_specific_arguments(parser)
+    # args = parser.parse_args()
+    # log.debug(f'{args=}')
 
     # shared queue for inter-process communication
+    # max size = 3 
     q = Queue()
     # primary UDP communications to TC
-    primary = Process(target=DummyReciever(), args=(q,))
+    primary = Process(target=DummyReciever(), args=(q,),daemon=True)
     log.info(f"starting {primary=}")
     primary.start() 
     
@@ -110,28 +118,30 @@ if __name__ == '__main__':
     processes = [] #list of processes
 
     # check if the argument --disable-motor-controller is set, if set -> disable motors
-    if getattr(args,"disable_motor_controller"):
-        log.debug('arg "disable_motor_controller" is true')
+    if no_motor is True:
+        # log.debug('arg "disable_motor_controller" is true')
+        controller_specific_events['tc_action_recv_event'] = multiprocessing.Event() 
         events.append(controller_specific_events['tc_action_recv_event'])
-        motor = Process(target=MotorDummy(), args=(f, controller_specific_events ,args), name="Motor Dummy")
+        motor = Process(target=DummyMotorControllerFactory(), args=(f, controller_specific_events,), name="Motor Dummy",daemon=False)
         processes.append(motor)
 
-    elif not getattr(args, "disable_motor_controller"):
-        log.debug('arg "disable_motor_controller" is false')
+    elif no_motor is False:
+        # log.debug('arg "disable_motor_controller" is false')
         controller_specific_events['tc_action_recv_event'] = multiprocessing.Event() 
         events.append(controller_specific_events['tc_action_recv_event'])
         # initalise motor controller
-        motor = Process(target=MotorController2Factory(), args=(f, controller_specific_events ,args), name="Motor Controller")
+        motor = Process(target=MotorController2Factory(), args=(f, controller_specific_events,), name="Motor Controller",daemon=False)
         processes.append(motor)
 
 
     # check if the argument --disable-arduino-controller is set, if set -> disable arduino
-    if not getattr(args, "disable_arduino_controller"):
-        log.debug('args attr "disable_arduino_controller" is false')
+    if no_arduino is False:
+        # log.debug('args attr "disable_arduino_controller" is false')
         controller_specific_events['tc_action_recv_event'] = multiprocessing.Event()
         events.append(controller_specific_events['tc_action_recv_event'])
         # initalise arduino controller
-        ardunio = Process(target=ArduinoControllerFactory(), args=(f, controller_specific_events, args), name="Ardunio Controller")
+        baudrate = 115200
+        ardunio = Process(target=ArduinoControllerFactory(), args=(f, controller_specific_events,baudrate, ), name="Ardunio Controller")
         processes.append(ardunio)
 
     # shared mutliprocessing.Queue for UDP listerner to communicate with distribution()

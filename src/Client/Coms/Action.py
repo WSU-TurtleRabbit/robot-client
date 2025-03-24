@@ -59,7 +59,7 @@ class Action(BaseAction):
         return self.msg
     
     @classmethod
-    def decode(cls,action_string:str) -> object:
+    def decode(cls,action_bytes:str) -> object:
         """decode
             decode and stores the action to an object
         Args:
@@ -71,8 +71,12 @@ class Action(BaseAction):
         Returns:
             object: Action object for robot to access
         """
-        if isinstance(action_string, bytes):
-            action_string = action_string.decode()
+        if isinstance(action_bytes, bytes):
+            action_string = action_bytes.decode()
+        elif isinstance(action_bytes,str):
+            action_string = action_bytes
+        else:
+            raise typeError("wrong action type : only bytes / string allowed")
 
         robot_id, vx, vy, w, kick, dribble, _time = action_string.split(" ")
         

@@ -1,4 +1,7 @@
-'''controller for replacing moteus motor controllers'''
+'''Dummy Motor
+This is a class to replicate Motor, but this does not require moteus module
+AKA Motor Sandbox Dummy
+'''
 import os
 import sys
 from Client.Controllers.BaseController import BaseController
@@ -13,9 +16,9 @@ import argparse
 import logging
 
 log = logging.getLogger()
-log.setLevel(logging.NOTSET)
+log.setLevel(logging.WARNING)
 
-class MotorDummy(BaseController):
+class DummyMotor(BaseController):
     ## CLASS CONSTANT ##
     
     # VELOCITY_LOWER_LIMIT: float = .001 # rate of .1 revolutions per second
@@ -58,8 +61,8 @@ class MotorDummy(BaseController):
         self.vx: float = 0.
         self.vy: float = 0.
         self.vw: float = 0.
-        self._action_interval = 1
-        self._action_duration = 0
+        self._action_interval = 1 # second
+        self._last_action_time: float = 0
         self.servo_bus_map: dict = { 
                     1: [1],
                     2: [2],
@@ -148,8 +151,7 @@ class MotorDummy(BaseController):
     def do(self):
         v1,v2,v3,v4 = self.calculate(self.vx,self.vy,self.vw)
         print(f"Wheels are moving at the sepeed of {v1=} {v2=} {v3=} {v4=}")
-        time.sleep(0.5)
-        
+        time.sleep(2)        
         
         
     async def run(self) -> None: # NOT IN USE
@@ -181,7 +183,7 @@ class MotorDummy(BaseController):
                             self.vw = action.w
                             log.info(f"new Velocity Received : {self.vx=} {self.vy=} {self.vw=}")
                             # updating last sent action timer
-                            self._action_duration =  action._time +self._action_interval
+                            self._last_action_time =  action._time 
                     
                     # # if received command from Team Control (server) to shut down
                     # if self._gc_force_shutdown_event.is_set():
@@ -202,7 +204,7 @@ class MotorDummy(BaseController):
                     
 
                     # if the time now is still within the action time
-                    if time.time() < self._action_duration:
+                    if time.time() < self._last_action_time + self._action_interval:
                         # loop the action
                         logging.warning("Action is now active, moving robot")
                         self.do()
@@ -218,9 +220,12 @@ class MotorDummy(BaseController):
                     log.error(f"An error has occurred:\n{e}")
                     await self._make_stop()
 
-                    sys.exit(1) 
-                    # General error exit code
-
+                    sys.exit(1) # General error exit code
+                    
+            except asyncio.exceptions.CancelledError as ce:
+                print("cancelled error")
+                sys.exit(130)
+                
             except KeyboardInterrupt:
                 log.warning("Keyboard Interrupt Detected, shutting down")
                 log.warning("Please wait until we stop all motors")
@@ -275,10 +280,11 @@ class MotorDummy(BaseController):
             raise ValueError
         self._interval = interval
 
-class MotorControllerFactory:
+class DummyMotorControllerFactory:
     @staticmethod
-    def __call__(shared_global_resource, event, args) -> None:
-        motor = MotorDummy(shared_global_resource)
+    def __call__(shared_global_resource, event) -> None:
+        motor = DummyMotor(shared_global_resource)
         motor.tc_action_recv_event = event['tc_action_recv_event']
         motor.gc_force_shutdown_event = event['gc_force_shutdown_event']
         asyncio.run(motor.run())
+        
