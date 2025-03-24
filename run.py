@@ -11,7 +11,7 @@ from Client.Controllers.Arduino import ArduinoController, ArduinoControllerFacto
 
 from Client import SharedResource, SharedResourceProxy
 
-from Client.Receivers.RobotUDP import *
+
 import multiprocessing 
 from multiprocessing.managers import BaseManager
 
@@ -111,7 +111,7 @@ if __name__ == '__main__':
     m = BaseManager()
     m.start()
     f = m.get_shared_global_resource()
-    # events for inter-process mmessaging
+    # events for inter-process messaging
     controller_specific_events = dict()
     controller_specific_events['gc_force_shutdown_event'] = multiprocessing.Event()
 
