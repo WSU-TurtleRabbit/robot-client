@@ -63,12 +63,13 @@ def get_shared_global_resource():
 
 def magic(q: multiprocessing.Queue, shared_global_resource, events: multiprocessing.Event) -> None:
     while True:
+
         if not q.empty():
             # set the shared namespace variable `action`
             # to the recved action
-            action = q.get()
-            if reduce(operator.or_, (x.is_set() for x in events)):
-                continue 
+            action = q.get_nowait()
+            # if reduce(operator.or_, (x.is_set() for x in events)):
+            #     pass 
 
             if isinstance(action, Action):
                 shared_global_resource.set_action(action)
@@ -82,7 +83,7 @@ def magic(q: multiprocessing.Queue, shared_global_resource, events: multiprocess
 
             # log.info(f'voltage: {shared_global_resource.get_voltage()}')
             # log.info(f'current: {shared_global_resource.get_current()}')
-
+                
 if __name__ == '__main__':
 
     freeze_support()
@@ -98,7 +99,7 @@ if __name__ == '__main__':
 
     # shared queue for inter-process communication
     # max size = 3 
-    q = Queue()
+    q = Queue(1)
     # primary UDP communications to TC
     primary = Process(target=DummyReciever(), args=(q,),daemon=True)
     log.info(f"starting {primary=}")

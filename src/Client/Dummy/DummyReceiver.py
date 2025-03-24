@@ -3,6 +3,7 @@ from Client.Coms.Action import Action
 import argparse
 import time
 import logging
+from multiprocessing import Queue
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -11,7 +12,7 @@ class DummyReciever():
     def __init__(self, ip_addr='', port=50514) -> None:
         self.ip_addr = ip_addr
         self.port = port
-        self.recv = None # multiprocessing.Queue object
+        self.recv:Queue = None # multiprocessing.Queue object
 
     def __call__(self, queue) -> None:
         recv = DummyReciever()  # make a reciever object
@@ -45,10 +46,15 @@ class DummyReciever():
                 action = Action.decode(message)
                 # log.info(f"RECV : {action=}")
                 # put it in queue for other process
-                self.recv.put(action, block=False) 
+                if self.recv.full():
+                    while not self.recv.empty:
+                        self.recv.get_nowait()
+                    continue
+                self.recv.put_nowait(action) 
             except socket.timeout: # if the recv ran out of time, restart loop. 
                 log.debug("recv timeout, restarting")
                 continue 
+            
                 # continue skips this cycle from this point
                 # pass re-enter back to the cycle from where it's detected
         

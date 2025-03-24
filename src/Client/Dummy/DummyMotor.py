@@ -61,7 +61,7 @@ class DummyMotor(BaseController):
         self.vx: float = 0.
         self.vy: float = 0.
         self.vw: float = 0.
-        self._action_interval = 1 # second
+        self._action_interval = 2 # second
         self._last_action_time: float = 0
         self.servo_bus_map: dict = { 
                     1: [1],
@@ -151,7 +151,7 @@ class DummyMotor(BaseController):
     def do(self):
         v1,v2,v3,v4 = self.calculate(self.vx,self.vy,self.vw)
         print(f"Wheels are moving at the sepeed of {v1=} {v2=} {v3=} {v4=}")
-        time.sleep(2)        
+        time.sleep(0.5)        
         
         
     async def run(self) -> None: # NOT IN USE
@@ -181,7 +181,7 @@ class DummyMotor(BaseController):
                             self.vx = action.vx
                             self.vy = action.vy
                             self.vw = action.w
-                            log.info(f"new Velocity Received : {self.vx=} {self.vy=} {self.vw=}")
+                            log.info(f"new Velocity Received : {self.vx=} {self.vy=} {self.vw=}, {self._last_action_time}")
                             # updating last sent action timer
                             self._last_action_time =  action._time 
                     
@@ -202,6 +202,7 @@ class DummyMotor(BaseController):
                     #     continue #continue => skip this cycle, 
                     #     pass #pass => return to the cycle
                     
+                    print(self._last_action_time+self._action_interval, time.time())
 
                     # if the time now is still within the action time
                     if time.time() < self._last_action_time + self._action_interval:
