@@ -1,7 +1,8 @@
 __pycache__
 
 bin/
-lib/
+rc/
+
 pyvenv.cfg
 *.egg-info
 .Python

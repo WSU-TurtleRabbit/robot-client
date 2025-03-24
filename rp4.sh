@@ -12,7 +12,7 @@ sudo apt install -y python3 python3-pip python3-venv python3-serial git
 sudo pip install --upgrade pip
 
 # remove blockage
-sudo rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED*
+# sudo rm -rf /usr/lib/python3.11/EXTERNALLY-MANAGED*
 
 #setup coms
 libbcm_host='/lib/aarch64-linux-gnu/libbcm_host.so'
