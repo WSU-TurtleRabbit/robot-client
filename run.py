@@ -6,7 +6,7 @@ from Client.Dummy.DummyMotor import DummyMotor,DummyMotorControllerFactory
 
 from Client.Coms.Action import Action
 
-from Client.Controllers.Motor2 import MotorController, MotorController2Factory
+from Client.Controllers.Motor3 import MotorController, MotorController3Factory
 from Client.Controllers.Arduino import ArduinoController, ArduinoControllerFactory
 
 from Client import SharedResource, SharedResourceProxy
@@ -131,7 +131,7 @@ if __name__ == '__main__':
         controller_specific_events['tc_action_recv_event'] = multiprocessing.Event() 
         events.append(controller_specific_events['tc_action_recv_event'])
         # initalise motor controller
-        motor = Process(target=MotorController2Factory(), args=(f, controller_specific_events,), name="Motor Controller",daemon=False)
+        motor = Process(target=MotorController3Factory(), args=(f, controller_specific_events,), name="Motor Controller",daemon=False)
         processes.append(motor)
 
 

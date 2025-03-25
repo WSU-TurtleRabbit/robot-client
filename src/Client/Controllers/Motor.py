@@ -61,7 +61,12 @@ class MotorController(BaseController):
 
         self._interval: float = 1 # ms
         self._u: float = 1. # motor movement is in 'mm' can be scaled by changing self.u
-    
+        self.vx: float = 0.
+        self.vy: float = 0.
+        self.vw: float = 0.
+        self._action_interval = 2 # second
+        self._last_action_time: float = 0
+        
         self.servo_bus_map: dict = { 
                     1: [1],
                     2: [2],
