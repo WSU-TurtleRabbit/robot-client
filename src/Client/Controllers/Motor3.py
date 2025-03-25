@@ -19,7 +19,7 @@ except ImportError as e:
 
 
 class MotorController3(MotorController):
-    def do(self, action: Action):
+    def do(self):
         '''
             do() - implements BaseController do()
         '''
