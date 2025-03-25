@@ -4,6 +4,7 @@ import argparse
 import time
 import logging
 from multiprocessing import Queue
+from queue import Full # for exception
 
 log = logging.getLogger()
 log.setLevel(logging.INFO)
@@ -46,11 +47,11 @@ class DummyReciever():
                 action = Action.decode(message)
                 # log.info(f"RECV : {action=}")
                 # put it in queue for other process
-                if self.recv.full():
-                    while not self.recv.empty:
-                        self.recv.get_nowait()
-                    continue
+                
                 self.recv.put_nowait(action) 
+            except Full:
+                log.error("queue is full, cannot put action")
+                continue #move on 
             except socket.timeout: # if the recv ran out of time, restart loop. 
                 log.debug("recv timeout, restarting")
                 continue 

@@ -1,5 +1,6 @@
 #! /usr/bin/python3
 from multiprocessing import Process, freeze_support, Manager, Queue
+import time
 
 from Client.Dummy.DummyReceiver import DummyReciever
 from Client.Dummy.DummyMotor import DummyMotor,DummyMotorControllerFactory
@@ -14,6 +15,7 @@ from Client import SharedResource, SharedResourceProxy
 
 import multiprocessing 
 from multiprocessing.managers import BaseManager
+from queue import Empty,Full
 
 import argparse
 from functools import reduce
@@ -61,10 +63,9 @@ shared_global_resource = SharedResource()
 def get_shared_global_resource():
     return shared_global_resource
 
-def magic(q: multiprocessing.Queue, shared_global_resource, events: multiprocessing.Event) -> None:
+def magic(q: multiprocessing.Queue, shared_global_resource, events) -> None:
     while True:
-
-        if not q.empty():
+        try:
             # set the shared namespace variable `action`
             # to the recved action
             action = q.get_nowait()
@@ -74,8 +75,22 @@ def magic(q: multiprocessing.Queue, shared_global_resource, events: multiprocess
             if isinstance(action, Action):
                 shared_global_resource.set_action(action)
 
-            elif not isinstance(action,Action) and action is not None:
-                raise TypeError(f'action is not type: {Action}, got {type(action)}')
+            
+        except TypeError as te:
+            log.debug(te)
+        
+        except Empty: #catches queue being empty (nothing)
+            continue #moves on
+        
+        except Full: # I don't think this will be accessed, but keeping here for debug
+            start = time.time() #set time to current
+            while not q.empty() and time.time <start +0.5: # interval for flushing away
+                a = q.get_nowait() #flush
+            shared_global_resource.set_action(a) #saves the latest one to be new action
+            pass
+            
+            
+            
             # set all events and wait...
             # timeout after 1 second if subprocesses freezes
             # for event in events:
