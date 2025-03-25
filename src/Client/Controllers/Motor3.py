@@ -98,10 +98,10 @@ class MotorController3(MotorController):
                         logging.warning("Action is now active, moving robot")
                         self.do()
                         results = await self.transport.cycle(self.query) # send the wheel velocities to the motor controllers
-                        for i in range(4): # each motor controller has query=True, check the registers for a fault state
-                            mc_fault_status = results[i].values[moteus.Register.FAULT] 
-                            if not mc_fault_status == 0:
-                                self._make_stop() 
+                        # for i in range(4): # each motor controller has query=True, check the registers for a fault state
+                        #     mc_fault_status = results[i].values[moteus.Register.FAULT] 
+                        #     if not mc_fault_status == 0:
+                        #         self._make_stop() 
                     else: # if the max action timer has reached, reset.
                         logging.warning("Action Timed Out, ROBOT IDLE.")
                         await self._make_stop()
