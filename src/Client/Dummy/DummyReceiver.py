@@ -50,7 +50,7 @@ class DummyReciever():
                 
                 self.recv.put_nowait(action) 
             except Full:
-                log.error("queue is full, cannot put action")
+                # log.error("queue is full, cannot put action")
                 # while self.recv.full():
                     # self.recv.get_nowait()
                     
