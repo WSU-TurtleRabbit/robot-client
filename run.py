@@ -76,7 +76,7 @@ def magic(q: multiprocessing.Queue, shared_global_resource, events) -> None:
                 shared_global_resource.set_action(action)
 
                 start = time.time() #set time to current
-                while not q.empty() and time.time <start +0.5: # interval for flushing away
+                while not q.empty() and time.time() <start +0.5: # interval for flushing away
                     a = q.get_nowait() #flush
                 shared_global_resource.set_action(a) #saves the latest one to be new action
 
