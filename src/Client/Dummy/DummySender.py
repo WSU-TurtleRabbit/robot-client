@@ -11,7 +11,7 @@ log.setLevel(logging.NOTSET)
     
 class DummyUDPSender:
     ''' send a constant stream of action objects to (ip_addr, port)'''
-    def __init__(self, ip_addr: str='127.0.0.1', port: int=50514) -> None:
+    def __init__(self, ip_addr: str='172.20.10.3', port: int=50514) -> None:
         self.ip_addr = ip_addr
         self.port = port 
         self.socket = None
@@ -33,7 +33,7 @@ class DummyUDPSender:
         while True:
             # vx = math.sin(time.time()) * 100
             # vy = math.cos(time.time()) * 100
-            vx = 100
+            vx = 10
             vy = 0
             msg = Action(robot_id=1, vx=vx, vy=vy, w=0., kick=0, dribble=0).encode()
             print(f'Sending Action... {msg}')
@@ -65,6 +65,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     kwargs = vars(args)
 
-    sender = DummyUDPSender(kwargs['ip'], kwargs['port'])
+    sender = DummyUDPSender()
     sender.connect()
     sender.send()
