@@ -52,26 +52,26 @@ class MotorController3(MotorController):
                     
                     if isinstance(action, Action) :
                         ## optional debug
-                        log.debug("New Action Received")
-                        ## check if all = 0 ?
-                        if action.vx == 0 and action.vy == 0 and action.w == 0:
-                            self.vx = 0.
-                            self.vy = 0.
-                            self.vw = 0.
-                            # if yes, make stop
-                            log.warning("Stop Action Received")
-                            await self._make_stop() #stopping all motors
+                        # log.debug("New Action Received")
+                        # ## check if all = 0 ?
+                        # if action.vx == 0 and action.vy == 0 and action.w == 0:
+                        #     self.vx = 0.
+                        #     self.vy = 0.
+                        #     self.vw = 0.
+                        #     # if yes, make stop
+                        #     log.warning("Stop Action Received")
+                        #     await self._make_stop() #stopping all motors
                             
-                        elif abs(action.vx)>0 or abs(action.vy) > 0 or abs(action.w) > 0:
+                        # elif abs(action.vx)>0 or abs(action.vy) > 0 or abs(action.w) > 0:
                             # reset fault
-                            # await self._make_stop() # comment this if needed
-                            # update velocity
-                            self.vx = action.vx
-                            self.vy = action.vy
-                            self.vw = action.w
-                            log.info(f"new Velocity Received : {self.vx=} {self.vy=} {self.vw=}, {self._last_action_time}")
-                            # updating last sent action timer
-                            self._last_action_time =  action._time 
+                        # await self._make_stop() # comment this if needed
+                        # update velocity
+                        self.vx = action.vx
+                        self.vy = action.vy
+                        self.vw = action.w
+                        log.info(f"new Velocity Received : {self.vx=} {self.vy=} {self.vw=}, {self._last_action_time}")
+                        # updating last sent action timer
+                        self._last_action_time =  action._time 
                     
                     # # if received command from Team Control (server) to shut down
                     # if self._gc_force_shutdown_event.is_set():
@@ -98,6 +98,7 @@ class MotorController3(MotorController):
                         logging.warning("Action is now active, moving robot")
                         self.do()
                         results = await self.transport.cycle(self.query) # send the wheel velocities to the motor controllers
+                        await asyncio.sleep(0.02)
                         # for i in range(4): # each motor controller has query=True, check the registers for a fault state
                         #     mc_fault_status = results[i].values[moteus.Register.FAULT] 
                         #     if not mc_fault_status == 0:
