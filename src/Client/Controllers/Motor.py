@@ -64,7 +64,7 @@ class MotorController(BaseController):
         self.vx: float = 0.
         self.vy: float = 0.
         self.vw: float = 0.
-        self._action_interval = 0.5# second
+        self._action_interval = 0.2 # second
         self._last_action_time: float = 0
         
         self.servo_bus_map: dict = { 

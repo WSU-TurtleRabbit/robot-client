@@ -103,7 +103,7 @@ if __name__ == '__main__':
 
     freeze_support()
 
-    no_motor = True
+    no_motor = False
     no_arduino=True
     # # add arguments to run.py
     # parser = argparse.ArgumentParser()
