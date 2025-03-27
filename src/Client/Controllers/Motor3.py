@@ -105,7 +105,7 @@ class MotorController3(MotorController):
                         #         self._make_stop() 
                     else: # if the max action timer has reached, reset.
                         logging.warning("Action Timed Out, ROBOT IDLE.")
-                        # await self._make_stop()
+                        await self._make_stop()
                         
                 # except TypeError as te: #Type error catches None in action
                     # not in use right now
