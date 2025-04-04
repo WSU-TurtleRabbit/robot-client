@@ -82,7 +82,7 @@ BASHRC_FILE="$HOME/.bashrc"
 if ! grep -q "alias $SHORT_CUT=" "$BASHRC_FILE"; then
     echo "Creating ShortCut for accessing This Virtual Environment"
 
-    CMD="source '$VENV_PATH'/bin/activate"
+    CMD="source $VENV_PATH/bin/activate"
     echo "alias $SHORT_CUT=\"$CMD\"" >> "$BASHRC_FILE"
     echo "New Command $SHORT_CUT has been added."
     
@@ -93,6 +93,7 @@ fi
 # Reload Bash Configuration
 echo "Reloading shell configuration..."
 source "$BASHRC_FILE"
+exec $SHELL
 
 echo "You can now type '$SHORT_CUT' in terminal to activate this Virtual Environment"
 echo "To Deactivate, type 'deactivate' "
