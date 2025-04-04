@@ -32,7 +32,7 @@ async def main():
     # We will start by sending a 'stop' to all servos, in the event
     # that any had a fault.
     await transport.cycle([x.make_stop() for x in servos.values()])
-
+    speed = 2.0
     while True:
         # The 'cycle' method accepts a list of commands, each of which
         # is created by calling one of the `make_foo` methods on
@@ -49,22 +49,23 @@ async def main():
         # 'make_position' accepts optional keyword arguments that
         # correspond to each of the available position mode registers
         # in the moteus reference manual.
+        
         commands = [
-            servos[11].make_position(
+            servos[1].make_position(
                 position=math.nan,
-                velocity=0.1*math.sin(now),
+                velocity=speed,
                 query=True),
-            servos[12].make_position(
+            servos[2].make_position(
                 position=math.nan,
-                velocity=0.1*math.sin(now + 1),
+                velocity=speed,
                 query=True),
-            servos[13].make_position(
+            servos[3].make_position(
                 position=math.nan,
-                velocity=0.1*math.sin(now + 2),
+                velocity=speed,
                 query=True),
-            servos[14].make_position(
+            servos[4].make_position(
                 position=math.nan,
-                velocity=0.1*math.sin(now + 3),
+                velocity=speed,
                 query=True),
         ]
 
