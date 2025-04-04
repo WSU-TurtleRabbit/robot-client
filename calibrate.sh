@@ -5,12 +5,12 @@
 # sudo moteus_tool --pi3hat-cfg '1=1;2=2;3=3;4=4' -t 1,2,3,4 --calibrate
 # or 
 echo 'calibrating motor 1'
-sudo moteus_tool --pi3hat-cfg '1=1;2=2;3=3;4=4' -t 1 calibrate
+sudo moteus_tool --pi3hat-cfg '1=1;2=2;3=3;4=4' -t 1 --calibrate
 echo 'calibrating motor 2'
-sudo moteus_tool --pi3hat-cfg '1=1;2=2;3=3;4=4' -t 2 calibrate
+sudo moteus_tool --pi3hat-cfg '1=1;2=2;3=3;4=4' -t 2 --calibrate
 echo 'calibrating motor 3'
-sudo moteus_tool --pi3hat-cfg '1=1;2=2;3=3;4=4' -t 3 calibrate
+sudo moteus_tool --pi3hat-cfg '1=1;2=2;3=3;4=4' -t 3 --calibrate
 echo 'calibrating motor 4'
-sudo moteus_tool --pi3hat-cfg '1=1;2=2;3=3;4=4' -t 4 calibrate
+sudo moteus_tool --pi3hat-cfg '1=1;2=2;3=3;4=4' -t 4 --calibrate
 echo "calibration completed. "
 
