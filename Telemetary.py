@@ -20,24 +20,29 @@ class AysncMotor(MotorController):
         msg, ip = self.sock.recvfrom(self.buffer)
 
         while True:
-            msg, ip = self.sock.recvfrom(self.buffer)
-            commands = Action.decode(msg)
+            try:
+                msg, ip = self.sock.recvfrom(self.buffer)
+                commands = Action.decode(msg)
 
-            while True:
-                try:
-                    self.sock.recvfrom(self.buffer)
-                except self.sock.timeout:
-                    break
+                while True:
+                    try:
+                        self.sock.recvfrom(self.buffer)
+                    except self.sock.timeout:
+                        break
 
+                tel_data = self.do(commands)
+                voltage = tel_data[0]
+                temp = tel_data[1]
 
-            tel_data = self.do(commands)
-            voltage = tel_data[0]
-            temp = tel_data[1]
+                data = f"Voltage:{voltage} , Temp:{temp}, Command{commands}"
+                data = bytes(data.encode('utf-8'))
 
-            data = f"Voltage:{voltage} , Temp:{temp}, Command{commands}"
-            data = bytes(data.encode('utf-8'))
+                self.sock.sendto(data, (ip, self.buffer))
+            except KeyboardInterrupt:
+                await self._make_stop()
+                break
 
-            self.sock.sendto(data, (ip, self.buffer))
+            
             
 if __name__ == "__main__":
     m = AysncMotor
