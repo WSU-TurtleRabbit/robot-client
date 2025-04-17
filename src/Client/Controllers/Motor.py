@@ -92,8 +92,7 @@ class MotorController(BaseController):
         self.set_wheel_radius() # sets radius of the wheel
         log.info("motor controller(s) initialised") #END
 
-    async def do(self, action: Action): # NOT IN USE
-        raise DeprecationWarning('use MotorController2')
+    async def do(self, action: Action): #   
         """_summary_
             runs the action (moving) applying to wheels
 
@@ -109,6 +108,9 @@ class MotorController(BaseController):
         vx = getattr(action, 'vx', 0.)
         vy = getattr(action, 'vy', 0.)
         vw = getattr(action, 'w', 0.)
+
+        temp = []
+        voltage = []
 
         log.debug(f"{vx=}, {vy=}, {vw=}")
 
@@ -133,8 +135,19 @@ class MotorController(BaseController):
             # print(time.ticks_diff(time.ticks_us(), ts))
             # loop velocity
             result = await self.transport.cycle(query)
+            for data in result:
+                temp.append(data.values[moteus.Register.TEMPERATURE])
+                voltage.append(data.values[moteus.Register.VOLTAGE])
 
         await self._make_stop()
+
+        avg_temp = sum(temp) / len(temp)
+        avg_voltage = sum(voltage) / len(voltage)
+        
+        tel_data = [avg_voltage, avg_temp]
+
+        return tel_data
+
 
     def calculate(self, vx: float, vy: float, vw: float) -> np.array:
         """_summary_
