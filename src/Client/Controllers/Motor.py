@@ -6,6 +6,11 @@ import math
 import numpy as np
 import time
 
+import asyncio
+import argparse
+import sys 
+import os
+
 import logging
 
 log = logging.getLogger()
@@ -19,9 +24,6 @@ try:
     import moteus_pi3hat # This requires pi3hat on top of RP4
 except ImportError as e:
     log.warning(e)
-
-import asyncio
-import argparse
 
 class MotorController(BaseController):
     # VELOCITY_LOWER_LIMIT: float = .001 # rate of .1 revolutions per second
@@ -103,38 +105,31 @@ class MotorController(BaseController):
             end (timer): sets timer for continuous runtime.
             results(complier) : runs the compiler (cmd) applies to all moteus boards via self.transport
         """
-
-        ### Extracts from the ACTION sent
-        vx = getattr(action, 'vx', 0.)
-        vy = getattr(action, 'vy', 0.)
-        vw = getattr(action, 'w', 0.)
-
-        temp = []
-        voltage = []
-
-        log.debug(f"{vx=}, {vy=}, {vw=}")
-
         # if vx, vy and vw are all 0s, stop the motors
 
         # if vx < self.VELOCITY_LOWER_LIMIT and vy < self.VELOCITY_LOWER_LIMIT and vw < self.VELOCITY_LOWER_LIMIT:
         #     await self.transport.cycle(x.make_stop() for x in self.controller.values())
         #     return
 
-        v1, v2, v3, v4 = self.calculate(vw, vx, vy) #calculate the velocity and send them back here
-
-        query = [
+        v1, v2, v3, v4 = self.calculate(self.vx, self.vy, self.vw) # convert vx, vy and w into the velocities for each wheel to achieve the desired movement
+        log.debug(f"Wheels are moving at the speed of {v1=} {v2=} {v3=} {v4=}")
+        ## we can add validation here
+        self.query = [
             self.controllers[id+1].make_position(
                 position=math.nan,
                 velocity=velocity,
-                query=False
-            ) for id, velocity in enumerate([v1, v2, v3, v4])
+                query=True
+            ) for id, velocity in enumerate([v1, v2, v3, v4]) # send a velocity only command to the moetus controller
         ]
+       
+        temp = []
+        voltage = []
 
         te = time.time() + self.interval
         while time.time() < te:
             # print(time.ticks_diff(time.ticks_us(), ts))
             # loop velocity
-            result = await self.transport.cycle(query)
+            result = await self.transport.cycle(self.query)
             for data in result:
                 temp.append(data.values[moteus.Register.TEMPERATURE])
                 voltage.append(data.values[moteus.Register.VOLTAGE])
@@ -215,29 +210,61 @@ class MotorController(BaseController):
         self.r4 = self.OMNIWHEEL_4_RADIUS/self._u
 
     async def run(self) -> None: # NOT IN USE
-        raise DeprecationWarning('use MotorController2')
         await self._make_stop()
         while True:
             try:
-                self.tc_action_recv_event.wait()
-                action = self.shared_global_resource.get_action()
-                if not isinstance(action, Action):
-                    raise TypeError(f"unexpected type: expected 'Action', got: {action.__class__}")
-                log.info(f"running {action}")
-                await self.do(action)
-                self._tc_action_recv_event.clear()
+                try:
+                    action = self.shared_global_resource.get_action()
+                    # check if there's a value for action and update existing
+                    
+                    if isinstance(action, Action) :
+                        # update the 3 velocity from the action
+                        self.vx = action.vx
+                        self.vy = action.vy
+                        self.vw = action.w
+                        log.info(f"new Velocity Received : {self.vx=} {self.vy=} {self.vw=}, {self._last_action_time}")
+                        # updating last sent action timer
+                        self._last_action_time =  action._time 
+                      
+                    log.debug(f"Action Expired Time : {self._last_action_time+self._action_interval}, time Now : {time.time()}")
+
+                    # if the time now is still within the action time
+                    if time.time() < self._last_action_time + self._action_interval:
+                        # loop the action
+                        logging.warning("Action is now active, moving robot")
+                        self.do()
+                        tel_data = await self.transport.cycle(self.query) # send the wheel velocities to the motor controllers
+                        print(tel_data) # telemetry output
+                        await asyncio.sleep(0.02)
+                        
+                    else: # if the max action timer has reached, reset.
+                        logging.warning("Action Timed Out, ROBOT IDLE.")
+                        await self._make_stop()
+                        
+                # except TypeError as te: #Type error catches None in action
+                    # not in use right now
+                    
+                # if any new unknown, we quit program and print error
+                except Exception as e:
+                    log.error(f"An error has occurred:\n{e}")
+                    await self._make_stop()
+
+                    sys.exit(1) # General error exit code
+                    
+            except asyncio.exceptions.CancelledError as ce:
+                log.error("cancelled error")
+                sys.exit(130)
+                
             except KeyboardInterrupt:
-                await self._exit()
-            except asyncio.CancelledError:
-                await self._exit()
-
-            # power_telemetry = await self.steam.read_data("power")
-            # log.info(power_telemetry)
-            # self.shared_global_resource.set_voltage(power_telemetry.output_voltage_V)
-            # self.shared_global_resource.set_current(power_telemetry.output_current_A)
-
-            if self._gc_force_shutdown_event.is_set():
-                break
+                log.warning("Keyboard Interrupt Detected, shutting down")
+                log.warning("Please wait until we stop all motors")
+                try:
+                    await self._make_stop() #maybe comment this 
+                    sys.exit(130)
+                except SystemExit:
+                    log.warning("PLEASE BE PATIENT! Stopping all motors...")
+                    await self._make_stop()
+                    os._exit(130)
 
     @staticmethod
     def add_cls_specific_arguments(parent: argparse.ArgumentParser) -> argparse.ArgumentParser:
@@ -282,8 +309,14 @@ class MotorController(BaseController):
 
 class MotorControllerFactory:
     @staticmethod
-    def __call__(shared_global_resource, event, args) -> None:
+    def __call__(shared_global_resource, event) -> None:    
+        ''' MotorControllerFactory()
+
+            @args:
+            shared_global_resource (TeamControl.SharedGlobalResource) interprocess communication messaging object
+            event (list[multiprocessing.Event]): list of mutliprocessing.Event objects to signal the process to do various actions
+        '''
         motor = MotorController(shared_global_resource)
-        motor.tc_action_recv_event = event['tc_action_recv_event']
-        motor.gc_force_shutdown_event = event['gc_force_shutdown_event']
+        motor.tc_action_recv_event = event['tc_action_recv_event'] # not in use
+        motor.gc_force_shutdown_event = event['gc_force_shutdown_event'] # not in use
         asyncio.run(motor.run())
