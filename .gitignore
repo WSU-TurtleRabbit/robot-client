@@ -10,3 +10,5 @@ pyvenv.cfg
 
 .DS_Store
 ._*
+
+moteus-*
