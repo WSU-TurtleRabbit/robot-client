@@ -44,7 +44,7 @@ class AysncMotor(MotorController):
             
             
 if __name__ == "__main__":
-    m = AysncMotor
+    m = AysncMotor()
     asyncio.run(m.main())
 
 

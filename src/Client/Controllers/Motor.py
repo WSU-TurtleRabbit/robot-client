@@ -48,7 +48,7 @@ class MotorController(BaseController):
     OMNIWHEEL_3_RADIUS: float = 33.5
     OMNIWHEEL_4_RADIUS: float = 33.5
 
-    def __init__(self, shared_global_resource) -> None:
+    def __init__(self) -> None:
         """_summary_
             initiate the motor controller with Moteus and Moteus pi3hat
         Params : 
@@ -59,7 +59,7 @@ class MotorController(BaseController):
             servos(map) : establish connection of moteus boards and pi3hat
         """
 
-        super().__init__(shared_global_resource)
+        # super().__init__(shared_global_resource)
 
         self._interval: float = 1 # ms
         self._u: float = 1. # motor movement is in 'mm' can be scaled by changing self.u
@@ -94,7 +94,7 @@ class MotorController(BaseController):
         self.set_wheel_radius() # sets radius of the wheel
         log.info("motor controller(s) initialised") #END
 
-    async def do(self, action: Action): #   
+    async def do(self): #   
         """_summary_
             runs the action (moving) applying to wheels
 
