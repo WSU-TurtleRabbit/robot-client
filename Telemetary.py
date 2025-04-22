@@ -2,7 +2,6 @@ import time
 from Client.Coms.Action import Action
 from Client.Controllers.Motor import MotorController
 import socket
-import yaml 
 import asyncio
 
 
