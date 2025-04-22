@@ -94,9 +94,10 @@ class MotorController(BaseController):
         self.set_wheel_radius() # sets radius of the wheel
         log.info("motor controller(s) initialised") #END
 
-    async def do(self): #   
+    async def do(self, action): #   
         """_summary_
             runs the action (moving) applying to wheels
+
 
         Args:
             action (Action): from action script import action string (vx,vy,omega)
@@ -109,9 +110,13 @@ class MotorController(BaseController):
 
         # if vx < self.VELOCITY_LOWER_LIMIT and vy < self.VELOCITY_LOWER_LIMIT and vw < self.VELOCITY_LOWER_LIMIT:
         #     await self.transport.cycle(x.make_stop() for x in self.controller.values())
+        print(action)
+        # print(action.vx, action.vy, action.w)
         #     return
 
-        v1, v2, v3, v4 = self.calculate(self.vx, self.vy, self.vw) # convert vx, vy and w into the velocities for each wheel to achieve the desired movement
+
+
+        v1, v2, v3, v4 = self.calculate(action.vx, action.vy, action.w) # convert vx, vy and w into the velocities for each wheel to achieve the desired movement
         log.debug(f"Wheels are moving at the speed of {v1=} {v2=} {v3=} {v4=}")
         ## we can add validation here
         self.query = [
@@ -122,17 +127,30 @@ class MotorController(BaseController):
             ) for id, velocity in enumerate([v1, v2, v3, v4]) # send a velocity only command to the moetus controller
         ]
        
-        temp = []
-        voltage = []
+        
 
         te = time.time() + self.interval
         while time.time() < te:
             # print(time.ticks_diff(time.ticks_us(), ts))
             # loop velocity
             result = await self.transport.cycle(self.query)
+            asyncio.sleep(0.02)
+            temp = []
+            voltage = []
             for data in result:
-                temp.append(data.values[moteus.Register.TEMPERATURE])
-                voltage.append(data.values[moteus.Register.VOLTAGE])
+                try:
+                    temp_reading = data.values[moteus.Register.TEMPERATURE]
+                    volatge_reading = data.values[moteus.Register.VOLTAGE]
+                    temp.append(temp_reading)
+                    voltage.append(volatge_reading )
+                except KeyError as e:
+                    print("Registers does not exist")
+                    continue
+                # volatge_reading = data.values[moteus.Register.VOLTAGE]
+                # temp.append(temp_reading)
+                # voltage.append(volatge_reading )
+            
+            
 
         await self._make_stop()
 
@@ -303,7 +321,7 @@ class MotorController(BaseController):
     
     @interval.setter
     def interval(self, interval):
-        if not isinstance(interval, int):
+        if not isinstance(interval, float):
             raise ValueError
         self._interval = interval
 

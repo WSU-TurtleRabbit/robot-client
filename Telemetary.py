@@ -3,42 +3,76 @@ from Client.Coms.Action import Action
 from Client.Controllers.Motor import MotorController
 import socket
 import asyncio
-
+import os 
+import moteus
+import moteus_pi3hat
 
 class AysncMotor(MotorController):
     def __init__(self):
-        self.ip = " "
-        self.port = 5014
-        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.ip = ''
+        self.port = 50514
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.buffer = 1024
-        self.interval = 0.05
+        self.interval = 0.1
+        self._u: float = 1.
+        self.sock.setblocking(False)
+        self.latest_data = None
+
+        self.servo_bus_map: dict = { 
+                    1: [1],
+                    2: [2],
+                    3: [3],
+                    4: [4],
+                    5: [32]
+                }
+
+        self.transport = moteus_pi3hat.Pi3HatRouter(
+                servo_bus_map = self.servo_bus_map
+            )
+        
+        self.controllers: dict = { 
+                id: moteus.Controller(id=id, transport=self.transport)
+                for id in self.servo_bus_map.keys()
+            }
+        self.set_direction_of_cw_motion() # sets wheel degrees 
+        self.set_wheel_xy_location() # sets distance to centre from each wheel
+        self.set_wheel_radius() # sets radius of the wheel
+        
+        # log.info("motor controller(s) initialised") #END
 
     async def main(self):
         self.sock.bind((self.ip, self.port))
-        self.sock.listen(1)
-        msg, ip = self.sock.recvfrom(self.buffer)
+        print("Starting")
+        # self.sock.listen(1)
+        # msg, ip = self.sock.recvfrom(self.buffer)
 
         while True:
             try:
-                msg, ip = self.sock.recvfrom(self.buffer)
-                commands = Action.decode(msg)
-
+                # msg, ip = self.sock.recvfrom(self.buffer)
+                # commands = Action.decode(msg)
+                # print(commands)
+                # print(commands.vx)
                 while True:
                     try:
-                        self.sock.recvfrom(self.buffer)
-                    except self.sock.timeout:
-                        break
+                        msg, ip = self.sock.recvfrom(self.buffer)
+                        self.latest_data = Action.decode(msg)
+                    except BlockingIOError:
+                        if self.latest_data:
+                            tel_data = await self.do(self.latest_data)
+                            voltage = tel_data[0]
+                            temp = tel_data[1]
 
-                tel_data = self.do(commands)
-                voltage = tel_data[0]
-                temp = tel_data[1]
+                            data:str = f"Voltage:{voltage} , Temp:{temp}, Command{self.latest_data}"
+                            print(f'Sending {data}')
+                            data = bytes(str(data).encode('utf-8'))
 
-                data = f"Voltage:{voltage} , Temp:{temp}, Command{commands}"
-                data = bytes(data.encode('utf-8'))
+                            # test = f"{}"
+                            # self.sock.sendto(data, (ip, self.buffer))
+                
 
-                self.sock.sendto(data, (ip, self.buffer))
             except KeyboardInterrupt:
                 await self._make_stop()
+                os._exit(130)
                 break
 
             
