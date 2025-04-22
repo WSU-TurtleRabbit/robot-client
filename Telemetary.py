@@ -6,6 +6,13 @@ import asyncio
 import os 
 import moteus
 import moteus_pi3hat
+import logging 
+
+
+
+logging.basicConfig(level=logging.INFO)
+log = logging.getLogger("motor_controller")
+
 
 class AysncMotor(MotorController):
     def __init__(self):
@@ -44,25 +51,22 @@ class AysncMotor(MotorController):
 
     async def main(self):
         self.sock.bind((self.ip, self.port))
-        print("Starting")
         # self.sock.listen(1)
         ip = None 
         while ip is None:
             try:
-                msg, ip = self.sock.recvfrom(self.buffer)
-                print(ip)
+                msg, address = self.sock.recvfrom(self.buffer)
+                ip = address[0]
+                log.info("connected to ip:{ip}")
                 self.sock_sender.bind(('', self.port))
+    
             except Exception as e:
-                print("Error at reciving socket")
+                log.error("Error {e} has occured")
                 continue
 
 
         while True:
             try:
-                # msg, ip = self.sock.recvfrom(self.buffer)
-                # commands = Action.decode(msg)
-                # print(commands)
-                # print(commands.vx)
                 try:
                     msg, _ = self.sock.recvfrom(self.buffer)
                     self.latest_data = Action.decode(msg)
@@ -73,20 +77,19 @@ class AysncMotor(MotorController):
                         voltage = tel_data[0]
                         temp = tel_data[1]
 
-                        data:str = f"Voltage:{voltage} , Temp:{temp}, Command{self.latest_data}"
-                        # print(f'Sending {data}')
+                        data:str = f"Voltage: {voltage} , Temp: {temp}, Command: {self.latest_data}"
+                        log.info("Sending data {data}")
                         sender_msg= bytes(str(data).encode())
-                        # test = f"{}"
-                        # print(type(sender_msg))
                         try:
                             self.sock_sender.sendto(sender_msg, (ip[0],self.sending_port))
-                            print(f"Data has been sent to {ip}")
+                            log.info("Data has been sent to %s", ip)
                         except TypeError as e:
-                            print(f'The Data your trying to send has the wrong typing')
+                            log.warning("The Code has wrong typing: %s", e)
                             continue
 
             except KeyboardInterrupt:
                 await self._make_stop()
+                log.info("Closing program")
                 os._exit(130)
                 break
 

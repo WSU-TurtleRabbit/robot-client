@@ -144,18 +144,15 @@ class MotorController(BaseController):
                     temp.append(temp_reading)
                     voltage.append(volatge_reading )
                 except KeyError as e:
-                    print("Registers does not exist")
+                    log.warning("Registers cannot be found")
                     continue
-                # volatge_reading = data.values[moteus.Register.VOLTAGE]
-                # temp.append(temp_reading)
-                # voltage.append(volatge_reading )
             
 
         avg_temp = sum(temp) / len(temp)
         avg_voltage = sum(voltage) / len(voltage)
         
         tel_data = [avg_voltage, avg_temp]
-
+        
         return tel_data
 
 
