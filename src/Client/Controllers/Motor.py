@@ -154,6 +154,69 @@ class MotorController(BaseController):
         tel_data = [avg_voltage, avg_temp]
         
         return tel_data
+    
+
+    async def do_v2(self, action): #   
+        """_summary_
+           version 2 of do function
+
+
+        Args:
+            action (Action): from action script import action string (vx,vy,omega)
+        Params:
+            cmd (dict): complies the motor make position command into a dictionary
+            end (timer): sets timer for continuous runtime.
+            results(complier) : runs the compiler (cmd) applies to all moteus boards via self.transport
+        """
+        # if vx, vy and vw are all 0s, stop the motors
+
+        # if vx < self.VELOCITY_LOWER_LIMIT and vy < self.VELOCITY_LOWER_LIMIT and vw < self.VELOCITY_LOWER_LIMIT:
+        #     await self.transport.cycle(x.make_stop() for x in self.controller.values())
+    
+        # print(action.vx, action.vy, action.w)
+        #     return
+
+
+
+        v1, v2, v3, v4 = self.calculate(action.vx, action.vy, action.w) # convert vx, vy and w into the velocities for each wheel to achieve the desired movement
+        log.debug(f"Wheels are moving at the speed of {v1=} {v2=} {v3=} {v4=}")
+        ## we can add validation here
+        self.query = [
+            self.controllers[id+1].make_position(
+                position=math.nan,
+                velocity=velocity,
+                query=True
+            ) for id, velocity in enumerate([v1, v2, v3, v4]) # send a velocity only command to the moetus controller
+        ]
+       
+        
+
+        loop_count = 2
+
+        for i in range(loop_count):
+        # print(time.ticks_diff(time.ticks_us(), ts))
+        # loop velocity
+            result = await self.transport.cycle(self.query)
+            temp = []
+            voltage = []
+            for data in result:
+                try:
+                    temp_reading = data.values[moteus.Register.TEMPERATURE]
+                    volatge_reading = data.values[moteus.Register.VOLTAGE]
+                    temp.append(temp_reading)
+                    voltage.append(volatge_reading )
+                except KeyError as e:
+                    log.warning("Registers cannot be found")
+                    continue
+            await asyncio.sleep(0.01)
+            
+
+        avg_temp = sum(temp) / len(temp)
+        avg_voltage = sum(voltage) / len(voltage)
+        
+        tel_data = [avg_voltage, avg_temp]
+        
+        return tel_data    
 
 
     def calculate(self, vx: float, vy: float, vw: float) -> np.array:
