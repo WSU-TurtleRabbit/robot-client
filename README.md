@@ -1,42 +1,38 @@
-## Installation
-Add an (SSH key)[https://docs.github.com/en/authentication/connecting-to-github-with-ssh] to your Github account. 
-```bash
-# key generation
-ssh-keygen -t ed25519 -f ~/.ssh/id_github
-# registering key on rp4
-cat << EOF >  ~/.ssh/config
-    HOST github.com-robot-client
-    Hostname github.com
-    User git
-    IdentityFile=/home/pi/.ssh/id_gihub
-   
-   HOST github.com-shared
-    Hostname github.com
-    User git
-    IdentityFile=/home/pi/.ssh/id_github
-EOF
-# activating registry
-chmod 600 ~/.ssh/config
+To add an ssh-key please see the [how-to]() repository
 
-# user call out to deploy key
-cat ~/.ssh/id_github.pub # deploy key will be displayed in terminal.
-
-# now clone the github repositories
-git clone git@github.com-robot-client:WSU-TurtleRabbit/robot-client.git 
-cd robot-client
-```
-or to initiate the require modules and environment on a raspberry pi, use the following commands:
+To get started with this python Package (on a raspberry pi 4) do :
 ```bash
-chmod u+x rp4setup.sh
-sudo ./rp4setup.sh
+chmod a+x rp4.sh
+./rp4.sh
 ```
+The following will be executed:
+1. installs the robot client if it is not found at HOME Directory
+2. Creates a virtual environment and compiles this Python Project
+3. Installs Moteus and dependencies
+4. Verifies if this vitual environment has access to Moteus Libraries
+5. sets the USB Dialout for Arduino Access via USB.
+6. Creates a shortcut to activate the virtual environment (DOES NOT WORK) 
 
 ## Usage
-To start the client on the robot, use the following commands:
+To start the client on the robot, we have to first activate the virtual environment in Superuser.
 ```bash
-chmod u+x run.py
-sudo ./run.py
+sudo su
+cd $HOME/robot-client
+source .venv/bin/activate
 ```
+To allow the robot receive and behave normally, do : 
+```bash
+./run.py
+```
+This will then runs the file. if you have any issues, please let one of the team members know. 
+
+To exit : 
+```bash
+deactivate
+exit
+```
+This shall bring you back to the ordinary user terminal level
+
 
 To update the ardunio:
 ```bash 
@@ -45,8 +41,24 @@ chmod u+x Arduino/update.py
 ```
 
 ## Installation - User Computer: 
-To set up the development enviroment on User Device, use the following commands:
+To set up the development enviroment on User Device(not rp4, but linux), also use
 ```bash
-./userInstall.sh
+./rp4.sh
 ```
-*If you are on Windows, please create a new terminal in git bash
+
+If you are not on linux, you will have to self compile this project using the following : 
+```bash
+python3 -m venv .venv
+source .venv/bin/activate # for mac and linux
+source .venv/Scripts/activate # for windows
+
+pip install -e . # add user -> pip install --user -e . 
+
+```
+Please note that this will not be installing moteus Libraries (our motors and pi3hats depends on this). 
+Therefore, anything related to motor will not be execute. 
+Best advice : use a Raspberry pi 4 to perform debugging and project development.
+Be aware : This project utilises all 4 cores of the RP4, so be aware, and highly recommened to put on a heatsink (a really beefy one that comes with a fan) 
+
+Now you should be good to go ! 
+Please let the team know if you have any issues or questions that you'd like to get an answer of ! 
