@@ -1,4 +1,4 @@
-To add an ssh-key please see the [how-to]() repository
+To add an ssh-key please see the [how-to](https://github.com/WSU-TurtleRabbit/how-to/blob/main/Linux/ssh-connection.md) repository
 
 To get started with this python Package (on a raspberry pi 4) do :
 ```bash
