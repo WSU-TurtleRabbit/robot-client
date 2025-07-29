@@ -85,6 +85,7 @@ class AysncMotor(MotorController):
     
             except Exception as e:
                 log.error("Error {e} has occured")  # Log any exception
+                await self._make_stop()
                 continue
 
         while True:
