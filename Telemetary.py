@@ -1,6 +1,7 @@
 import time
 from Client.Coms.Action import Action
 from Client.Controllers.Motor import MotorController
+from Client.Controllers.Arduino import *
 import socket
 import asyncio
 import os 
@@ -34,6 +35,9 @@ class AysncMotor(MotorController):
         self._u: float = 1.  # Control parameter (purpose context-dependent)
         self.sock.setblocking(False)  # Set socket to non-blocking mode
         self.latest_data = None  # Store latest received Action
+        self.ArduinoPort = str(ArduinoController.detect_ardunio_device())
+        
+        self.arduino = ArduinoController(port =self.ArduinoPort, baudrate= 9600)
 
         # Mapping between bus numbers and servo IDs
         self.servo_bus_map: dict = { 
@@ -92,6 +96,7 @@ class AysncMotor(MotorController):
                     # No new data, use last available command
                     if self.latest_data:
                         tel_data = await self.do(self.latest_data)  # Perform action and get telemetry
+                        self.arduino.do(self.latest_data)
                         await self._make_stop()  # Optional stop call
                         voltage = tel_data[0]
                         temp = tel_data[1]
@@ -113,3 +118,9 @@ class AysncMotor(MotorController):
                 log.info("Closing program")
                 os._exit(130)
                 break
+
+
+
+if __name__ == '__main__':
+    a = AysncMotor()
+    asyncio.run(a.main())
