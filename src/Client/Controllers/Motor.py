@@ -190,7 +190,7 @@ class MotorController(BaseController):
         ]
 
         # Fixed number of loops to perform
-        loop_count = 2
+        loop_count = 20
 
         for i in range(loop_count):
             # Send the prepared commands and get the feedback from all controllers

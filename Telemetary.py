@@ -96,7 +96,7 @@ class AysncMotor(MotorController):
                 except BlockingIOError:
                     # No new data, use last available command
                     if self.latest_data:
-                        tel_data = await self.do(self.latest_data)  # Perform action and get telemetry
+                        tel_data = await self.do_v2(self.latest_data)  # Perform action and get telemetry
                         self.arduino.do(self.latest_data)
                         await self._make_stop()  # Optional stop call
                         voltage = tel_data[0]
